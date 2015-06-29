@@ -1,0 +1,735 @@
+= Déploiement d'une application avec Spring Boot
+Stéphane Deraco <stephane.deraco@dsi.cnrs.fr>
+JDEV 2015
+:toc2:
+:numbered:
+:toclevels: 5
+
+== Présentation de Spring Boot
+=== Un projet Java classique
+Une application Java est de nos jours principalement une application _standalone_ (par exemple
+un traitement de données en tâche de fond), ou une application Web (sur un Tomcat, ou un serveur
+d'application).
+
+Java est très bien outillé pour la mise en oeuvre de telles applications : Maven et Gradle pour
+la gestion du cycle de vie, tests unitaires, une multitude de _frameworks_ divers et variés,
+des conteneurs pour exécuter les programmes.
+
+Souvent, le démarrage d'un projet Java consiste à faire de la tuyauterie : mettre en place les
+différentes librairies communément utilisées, faire attention aux différentes versions, préparer
+la configuration d'accès aux bases de données.
+
+Puis vient la phase de déploiement : dépôt d'un _war_ dans un conteneur ? Ce _war_ contient-il
+des jars embarqués, ou faut-il mettre à jour les jars partagés du Tomcat ? Comment gérer les fichiers
+de propriétés ? Et la supervision : y a-t-il des points d'entrées pour surveiller la santé de notre
+application ?
+
+=== Spring Boot
+Spring Boot apporte des solutions à ces problèmes. Avant de voir comment, voyons déjà ce que
+Spring Boot n'est pas :
+
+* ce n'est pas un _framework_, du moins pas comme un Spring Security, Guava, ou autre
+* un générateur de code ; autrement dit, Spring Boot fait partie intégrante du projet, y compris
+  lors de l'exécution de l'application
+* un outil de maquettage ; il sert à faire des applications complètes (à noter que le site
+  http://spring.io/[Spring IO] est un projet réalisé avec Spring Boot (les sources sont
+  sur ce https://github.com/spring-io/sagan[dépôt Github])
+
+Spring Boot simplifie la vie du développeur en :
+
+* utilisant des librairies souvent utilisées, dans des versions cohérentes
+* auto-configurant les composants qui sont détectés sur le classpath (par exemple, si Spring Boot
+  détecte le driver Java de Mongo, ou un driver JDBC, ou Tomcat, etc., alors il configure
+  automatiquement un ensemble de Bean (au sens Spring) pour utiliser ces composants)
+* permemttant de personnaliser les composants, pour passer outre l'auto-configuration
+* simplifiant la gestion des propriétés provenant de sources différentes
+* exposant des points d'entrées pour la surveillance de l'application
+* simplifiant le déploiement (un jar unique, ou un war pour Tomcat)
+
+Ce ne sont là qu'une partie des avantages de Spring Boot. Pour aller plus loin, consulter les
+références suivantes :
+
+.Références
+* http://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/[Guide de référence Spring Boot]
+* La plupart des exemples sur http://spring.io/guides utilisent Spring Boot
+
+== Déroulement de l'atelier
+Création d'une application, en ajoutant des fonctionnalités de Spring Boot au fur et à mesure.
+
+* Collecter des données
+* Stocker ces données en base (Mongo ici)
+* Exposer des services web REST pour accéder aux données
+* Configuration de l'application
+* Déploiement
+
+== Première partie : création de l'application, récupération des données
+=== Création initiale de l'application
+Nous allons créer le début de l'application qui permet de récupérer les données en appelant le
+service web.
+Nous allons récupérer les données météorologique sur http://openweathermap.org/current[OpenWeatherMap].
+
+Ce site expose une API pour récupérer des donées au format JSON. L'URL à appeler est la suivante :
+
+http://api.openweathermap.org/data/2.5/weather?q=Toulouse,fr&units=metric
+
+Les données retournées qui nous intéressent sont les suivantes :
+
+[source,json]
+----
+{
+  "main: {
+    "temp":18.005, // <1>
+    "temp_min":18.005,
+    "temp_max":18.005,
+    "pressure":1013.31,
+    "sea_level":1032.36,
+    "grnd_level":1013.31,
+    "humidity":55 // <2>
+  },
+  "wind": {
+    "speed":3.36, // <3>
+    "deg":291.501
+  },
+  "clouds": {
+    "all":56
+  },
+  "dt":1432497470, // <4>
+  "id":2972315,
+  "name":"Toulouse",
+  "cod":200
+}
+----
+<1> Température
+<2> Humidité
+<3> Vitesse du vent
+<4> Date au format _epoch_
+
+
+Pour générer un squellette d'application, utiliser son IDE ou alors Maven en ligne de commande :
+
+[source,shell]
+mvn archetype:generate -DgroupId=jdev2015 -DartifactId=boot -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+Modifier le `pom.xml` pour ne garder que l'essentiel :
+
+.pom.xml
+[source,xml]
+----
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>jdev2015</groupId>
+	<artifactId>boot</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0-SNAPSHOT</version>
+
+	<name>boot</name>
+</project>
+----
+
+Ajouter ensuite les dépendances suivantes :
+
+.Dépendances
+[source,xml]
+----
+<dependencies>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-web</artifactId> // <1>
+		<version>4.1.6.RELEASE</version>
+	</dependency>
+	<dependency>
+		<groupId>com.fasterxml.jackson.core</groupId>
+		<artifactId>jackson-databind</artifactId> // <2>
+		<version>2.5.3</version>
+	</dependency>
+	<dependency>
+		<groupId>com.google.guava</groupId>
+		<artifactId>guava</artifactId> // <3>
+		<version>18.0</version>
+	</dependency>
+</dependencies>
+----
+<1> Fournit un `RestTemplate` pour l'appel du service web
+<2> Fournit le mapping Json -> Objet
+<3> Outillage divers et varié
+
+
+Nous allons maintenant créer une classe pour contenir les données récupérées à travers
+le service web, avec les annotations Jackson pour le mapping depuis du JSON :
+
+.Measure.java
+[source,java]
+----
+package jdev2015.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+
+import java.util.Map;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Measure {
+	private double temp;
+	private double humidity;
+	private double speed;
+
+	@JsonProperty("dt")
+	private long date;
+
+	@JsonProperty("main")
+	public void setMain(Map<String, String> main) { // <1>
+		setTemp(Double.valueOf(main.get("temp")));
+		setHumidity(Double.valueOf(main.get("humidity")));
+	}
+
+	@JsonProperty("wind")
+	public void setWind(Map<String, String> wind) {
+		setSpeed(Double.valueOf(wind.get("speed")));
+	}
+
+	public double getTemp() {
+		return temp;
+	}
+
+	public void setTemp(double temp) {
+		this.temp = temp;
+	}
+
+	public double getHumidity() {
+		return humidity;
+	}
+
+	public void setHumidity(double humidity) {
+		this.humidity = humidity;
+	}
+
+	public double getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(double speed) {
+		this.speed = speed;
+	}
+
+	public long getDate() {
+		return date;
+	}
+
+	public void setDate(long date) {
+		this.date = date;
+	}
+
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("temp", temp)
+				.add("humidity", humidity)
+				.add("speed", speed)
+				.add("date", date)
+				.toString();
+	}
+}
+----
+<1> Comme les données `temp` et `humidity` sont embarquées dans un document `main` dans le résultat Json,
+    et que l'on ne veut pas ce document dans notre classe, on utilise cette astuce avec Jackson
+
+
+Nous écrivons maintenant notre classe princpale, qui va appeler le service web, et afficher le résultat
+sur la console :
+
+.Application.java
+[source,java]
+----
+package jdev2015;
+
+import jdev2015.model.Measure;
+import org.springframework.web.client.RestTemplate;
+
+public class Application {
+	public static final String WEATHER_ENDPOINT = "http://api.openweathermap.org/data/2.5/weather?q=Toulouse,fr&units=metric";
+
+	public static void main(String[] args) throws Exception {
+		Application app = new Application();
+		app.run(args);
+	}
+
+	public void run(String... args) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		Measure measure = restTemplate.getForObject(WEATHER_ENDPOINT, Measure.class);
+		System.out.println(measure);
+	}
+}
+----
+
+Si on exécute le programme, on obtient le résultat suivant :
+
+ Measure{temp=19.132, humidity=77.0, speed=4.97, date=1432568714}
+
+Nous avons donc un début d'application qui fonctionne.
+
+
+=== Introduction de Spring Boot
+==== Dans Maven
+Nous allons maintenant ajouter Spring Boot en tant que projet parent de celui-ci. Cela permet d'hériter
+de propriétés, de versions cohérentes de librairies, etc.
+
+.Projet parent dans le pom
+[source,xml]
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.2.3.RELEASE</version>
+</parent>
+
+Ensuite, on peut utiliser des _starters_ proposés par Spring Boot qui correspondent à un type
+d'application. Les _starters_ incluent les librairies nécessaires, et la configuration qui va
+avec. Voici quelques _starters_ (la liste complète est présente
+https://github.com/spring-projects/spring-boot/tree/master/spring-boot-starters[ici]) :
+
+* batch
+* websocket
+* mail
+* security
+
+Pour le moment, notre application est très basique, nous allons ajouter le _starter_
+`spring-boot-starter`, et modifier légérement les autres dépendances :
+
+.Starter parent
+[source,xml]
+----
+<dependencies>
+	<!-- Spring Boot -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter</artifactId> // <1>
+	</dependency>
+	<!-- Spring -->
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-web</artifactId>
+		<version>${spring.version}</version> // <2>
+	</dependency>
+	<!-- Jackson -->
+	<dependency>
+		<groupId>com.fasterxml.jackson.core</groupId>
+		<artifactId>jackson-databind</artifactId> < // <3>
+	</dependency>
+	<!-- Guava -->
+	<dependency>
+		<groupId>com.google.guava</groupId>
+		<artifactId>guava</artifactId>
+		<version>18.0</version>
+	</dependency>
+</dependencies>
+----
+<1> le _starter_ de base
+<2> on utilise la version de Spring définie en tant que propriété dans le projet parent, afin d'avoir
+    des versions cohérentes
+<3> on ne spécifie pas de version pour Jackson ; en effet, le projet parent possède un bloc
+    `dependencyManagement` qui définit les versions préconisées (et cohérentes entre-elles)
+
+Pour indiquer que nous utilisons Java 8, il faut en général le préciser à plusieurs endroits dans
+le pom (version _source_, version _target_). Ici, il suffit de positionner la propriété
+`java.version` :
+
+.Version de Java
+[source, xml]
+<properties>
+    <java.version>1.8</java.version>
+</properties>
+
+==== Dans le code
+Une application Spring Boot est une application normale, avec un `main`. Cependant, nous allons
+y ajouter des annotations :
+
+.Application.java
+[source,java]
+----
+package jdev2015;
+
+import jdev2015.model.Measure;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.client.RestTemplate;
+
+@SpringBootApplication // <1>
+public class Application implements CommandLineRunner { // <2>
+	public static final String WEATHER_ENDPOINT = "http://api.openweathermap.org/data/2.5/weather?q=Toulouse,fr&units=metric";
+
+	public static void main(String[] args) throws Exception {
+		SpringApplication.run(Application.class, args); // <3>
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		RestTemplate restTemplate = new RestTemplate();
+		Measure measure = restTemplate.getForObject(WEATHER_ENDPOINT, Measure.class);
+		System.out.println(measure);
+	}
+}
+----
+<1> L'annotation `@SpringBootApplication` est une méta-annotation qui déclenche l'auto-configuration
+    et le scan de composants (au sens Spring classique)
+<2> Pour pouvoir effectuer un traitement une fois Spring Boot initialisé, il suffit d'implémenter
+    l'interface `CommandLineRunner` (et la méthode `run`)
+<3> Pour démarrer l'application, utiliser `SpringApplication.run`
+
+Tout ceci ne fait rien d'extraordinaire pour le moment, du moins ce n'est pas (encore) visible. Si on
+exécute le code, on a sensiblement le même résultat, mis à part des logs de Spring qui s'affichent.
+
+
+=== Les logs
+On peut noter que le fait d'avoir ajouté Spring Boot fait que les logs sont automatiquement configurés.
+Spring les utilise pour logger ce qu'il fait, et on peut en faire de même.
+
+Spring Boot supporte les principaux _frameworks_ de log, tels que JUL, Log4J, ou SLF4J que l'on va
+utiliser.
+
+Un pattern par défaut est mis en place, ainsi que les niveaux de logs.
+
+NOTE: Si le terminal le supporte, les logs sont affichés en couleur !
+
+Pour configurer les niveux de logs, cela se fait dans le fichier de propriétés de Spring Boot, nommé
+`application.properties`. Il est également possible d'utiliser la syntaxe http://fr.wikipedia.org/wiki/YAML[YAML], 
+dans ce cas le fichier est appelé `application.yml` et se trouve dans le répertoire `resources`.
+
+Créons le fichier suivant pour modifier les niveaux de logs :
+
+.application.yml
+[source,yaml]
+logging.level:
+    jdev2015: DEBUG
+    org.springframework: INFO
+
+
+Il faut également ajouter les instructions de logs dans le code Java :
+
+.extrait de Application.java
+[source,java]
+----
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
+
+public class Application implements CommandLineRunner {
+    private static final Logger LOG = getLogger(Application.class); // <1>
+    // ...
+    public void run(String... args) throws Exception {
+        RestTemplate restTemplate = new RestTemplate();
+        Measure measure = restTemplate.getForObject(WEATHER_ENDPOINT, Measure.class);
+        LOG.debug("Fetched measure : {}", measure); // <2>
+    }
+}
+----
+<1> Initialisation du log pour cette classe
+<2> Log au niveau DEBUG
+
+=== Création d'un jar exécutable
+Spring Boot peut créer un fichier _jar_ exécutable. Ce fichier jar contiendra toutes les librairies
+nécessaires au bon fonctionnement de l'application. La technique utilisée n'est pas une mise à plat
+de toutes les classes, ce qui peut poser problème, mais bien des jars dans le jar.
+
+Avec Maven, il faut déclarer le plugin suivant :
+
+.pom.xml
+[source,xml]
+----
+<build>
+	<plugins>
+		<plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+		</plugin>
+	</plugins>
+</build>
+----
+
+Ensuite, on peut créer le jar avec la commande :
+
+[source,shell]
+mvn clean package
+
+On peut alors exécuter l'application :
+
+[source,shell]
+java -jar target/boot-1.0-SNAPSHOT.jar
+
+=== Les propriétés
+==== Fichier de propriétés
+Nous allons paramétrer l'URL à appeler dans le fichier de propriétés. Spring Boot permet de stocker
+les propriétés dans un fichier `application.properties` ou `application.yml`.
+
+Nous allons utiliser le fichier avec la syntaxe http://fr.wikipedia.org/wiki/YAML[YAML]. Compléter le fichier
+`application.yml` :
+
+.application.yml
+[source,yaml]
+----
+jdev:
+    ws:
+        url: http://api.openweathermap.org/data/2.5/weather?q=Toulouse,fr&units=metric
+----
+
+Pour récupérer cette valeur dans l'application, le plus simple est d'utiliser l'annotation
+`@Value` :
+
+.Application.java
+[source,java]
+----
+@Value("${jdev.ws.url}")
+private String url;
+
+@Override
+public void run(String... args) throws Exception {
+	RestTemplate restTemplate = new RestTemplate();
+	Measure measure = restTemplate.getForObject(url, Measure.class);
+	LOG.debug("Fetched measure : {}", measure);
+}
+----   
+
+Une propriété peut faire référence à une autre propriété :
+
+.application.yml
+[source,yaml]
+----
+jdev:
+    ws:
+        city: Toulouse,fr
+        url: http://api.openweathermap.org/data/2.5/weather?q=${jdev.ws.city}&units=metric
+----
+
+==== Autres sources de propriétés
+En fait, les propriétés que l'on récupère par l'annotation `@Value` sont une
+consolidation de plusieurs sources de propriétés, dont les principales sont :
+
+* valeurs passées en ligne de commande au démarrage de l'application
+* variables d'environnement
+* valeurs présentes dans le fichier _application.yml_ qui se trouve *en dehors* du jar packagé
+* valeurs présentes dans le fichier _application.yml_ qui se trouve *à l'intérieur* du jar packagé
+* valeurs par défaut (par exemple `@Value("${mon.port:8181}")`)
+
+NOTE: voir http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config
+      pour la liste complète
+
+Une propriété nommée `jdev.ws.city` est aussi reconnue en tant que variable d'environnement
+en tant que `JDEV_WS_CITY`.
+
+==== Exemple
+Nous allons exécuter le jar sans aucun paramètre :
+
+[source, shell]
+----
+java -jar target/boot-1.0-SNAPSHOT.jar
+[...]
+Fetched measure : Measure{temp=20.223, humidity=35.0, speed=3.61, date=1435089328}
+----
+
+Et la même chose, en changeant la ville :
+
+[source, shell]
+----
+java -jar target/boot-1.0-SNAPSHOT.jar --jdev.ws.city=sevilla,es
+[...]
+Fetched measure : Measure{temp=24.223, humidity=39.0, speed=4.26, date=1435091409}
+----
+
+=== Planification
+Nous allons utiliser des annotations pour planifier la récupération à
+intervalles réguliers des données. Afin de pouvoir modifier la fréquence
+sans modifier le code, la valeur sera paramétrable.
+
+Nous allons commencer par simplifier la classe `Application` :
+
+.Application.java
+[source,java]
+----
+@SpringBootApplication
+public class Application {
+	public static void main(String[] args) throws Exception {
+		SpringApplication.run(Application.class, args);
+	}
+}
+----
+
+Spring Boot va scanner le classpath à la recherche de classes annotées `Component`.
+Créer la classe `Fetcher` dans le package `services` :
+
+.Fetcher.java
+[source,java]
+----
+package jdev2015.services;
+
+import jdev2015.model.Measure;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
+@Component // <1>
+@EnableScheduling // <2>
+public class Fetcher {
+	private static final Logger LOG = getLogger(Fetcher.class);
+
+	@Value("${jdev.ws.url}")
+	private String url;
+
+	private RestTemplate restTemplate = new RestTemplate();
+
+	@Scheduled(cron = "${jdev.ws.cron}") // <3>
+	public void fetch() throws Exception {
+		Measure measure = restTemplate.getForObject(url, Measure.class);
+		LOG.debug("Fetched measure : {}", measure);
+	}
+}
+----
+<1> Les classes annotées `@Component` sont détectées par Spring (car la classe
+    principale `Application` est annotée avec `@SpringBootApplication`, qui
+    induit `@ComponentScan`)
+<2> Pour pouvoir utiliser le _scheduling_, il faut l'activer
+<3> On peut tout à fait récupérer la valeur de la crontab par une propriété
+
+Enfin, définir la nouvelle propriété `jdev.ws.cron` :
+
+.application.yml
+[source,yaml]
+----
+jdev:
+    ws:
+        cron: '*/10 * * * * *' # toutes les 10 secondes <1>
+----
+<1> A noter que l'on doit utiliser les simples quotes car la valeur commence par `*`
+
+Nous avons maintenant un code qui tourne et récupère régulièrement les données.
+Il faut maintenant les stocker.
+
+== Seconde partie : stocker les données
+=== Spring Data
+Nous allons utiliser Spring Data Mongo pour s'interfacer avec une base de données
+Mongo. Pour cela, modifier le pom pour ajouter le _starter_ Spring Data Mongo :
+
+.pom.xml
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-data-mongodb</artifactId>
+</dependency>
+----
+
+Le paramétrage de la connexion à Mongo se fait simplement en ajoutant les propriétés suivantes :
+
+.application.yml
+[source,yaml]
+----
+spring.data.mongodb:
+    host: localhost
+    port: 27017
+    database: jdev
+----
+
+=== Modèle de données
+Si on ajoute un champ `id` dans la classe `Measure` (ou alors un champ avec
+l'annotation `@Id`), alors il sera utilisé pour définir
+la clé du document stocké dans Mongo. Elle peut être de type `String`, `Long`, ...
+
+Si on la laisse non renseignées, alors Mongo va automatiquement assigner un _id_ à ce
+document.
+
+.Measure.java
+[source,java]
+----
+@Id
+private String key;
+
+public String getKey() {
+	return key;
+}
+----
+
+=== Spring Data _Repository_
+Pour accéder aux données, il existe plusieurs solutions :
+
+- utiliser `MongoTemplate` (à la manière de `JDBCTemplate`)
+- récupérer une instance de `com.mongodb.Mongo`
+- utiliser un _Repository_
+
+Nous allons pour le moment utiliser le principe du 
+http://docs.spring.io/spring-data/data-mongo/docs/1.7.0.RELEASE/reference/html/#repositories[_Repository_]
+qui permet de définir les opérations de base sur Mongo, ainsi que des opérations
+personnalisées à partir du nom de la méthode. Cela se fait en créant une interface
+étandant l'interface `MongoRepository` qui définit les méthodes `save`, `findAll`,
+`insert`, etc.
+On peut ensuite définir dans cette interface nos propres méthodes en suivant une
+certaine nomenclature, et Spring générera automatiquement le code nécessaire
+pour implémenter cette méthode.
+Par exemple, une méthode nommée `findByLastnameAndFirstnameAllIgnoreCase` permettra
+de faire des recherches sur le nom et le prénom, sans tenir compte de la casse.
+
+Dans notre cas, nous allons simplement définir notre _Repository_ :
+
+.MeasureRepository.java
+[source,java]
+----
+package jdev2015.services;
+
+import jdev2015.model.Measure;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface MeasureRepository extends MongoRepository<Measure, String> {
+
+}
+----
+
+On peut maintenant l'utiliser.
+
+=== Sauvegarde des données
+On va injecter le _Repository_ dans la classe `Fetcher`, puis appeler la
+méthode `save` sur la mesure récupérée :
+
+.Fetcher.java
+[source,java]
+----
+@Autowired
+private MeasureRepository measureRepository; // <1>
+
+@Scheduled(cron = "${jdev.ws.cron}")
+public void fetch() throws Exception {
+	Measure measure = restTemplate.getForObject(url, Measure.class);
+	measureRepository.save(measure); // <2>
+	LOG.debug("Saved measure : {}", measure);
+}
+----
+<1> Récupération du _Repository_
+<2> Enregistrement de la donnée
+
+Lors du `save`, le champ annoté `@Id` est valorisé dans l'objet passé en paramètre.
+
+Les données sont enregistrées dans Mongo.
+
+== Exposer les données par un service web
+Pour exposer un service web, il faut un serveur web. Spring Boot permet de
+très facilement utiliser un Tomcat (ou Jetty ou Undertow) embarqué. Il suffit
+pour cela d'ajouter la dépendance adéquate :
+
+.pom.xml
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+----
+
+
+
+
+
+
+
