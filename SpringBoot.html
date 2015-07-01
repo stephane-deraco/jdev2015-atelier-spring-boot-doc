@@ -1,0 +1,2759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.2">
+<meta name="author" content="Stéphane Deraco &lt;stephane.deraco@dsi.cnrs.fr&gt;">
+<title>Déploiement d&#8217;une application avec Spring Boot</title>
+<link rel="stylesheet" href="file://C:/Users/sdr/AppData/Roaming/Brackets/extensions/user/nerk.asciidoc-preview/themes/asciidoctor-compact.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Déploiement d&#8217;une application avec Spring Boot</h1>
+<div class="details">
+<span id="author" class="author">Stéphane Deraco &lt;stephane.deraco@dsi.cnrs.fr&gt;</span><br>
+<span id="revdate">JDEV 2015</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_pr_sentation_de_spring_boot">1. Présentation de Spring Boot</a>
+<ul class="sectlevel2">
+<li><a href="#_un_projet_java_classique">1.1. Un projet Java classique</a></li>
+<li><a href="#_spring_boot">1.2. Spring Boot</a></li>
+</ul>
+</li>
+<li><a href="#_d_roulement_de_l_atelier">2. Déroulement de l&#8217;atelier</a></li>
+<li><a href="#_premi_re_partie_introduction_spring_boot">3. Première partie : introduction à Spring Boot</a>
+<ul class="sectlevel2">
+<li><a href="#_cr_ation_initiale_de_l_application">3.1. Création initiale de l&#8217;application</a>
+<ul class="sectlevel3">
+<li><a href="#_dans_le_code">3.1.1. Dans le code</a></li>
+</ul>
+</li>
+<li><a href="#_lancement_d_un_traitement">3.2. Lancement d&#8217;un traitement</a></li>
+<li><a href="#_les_logs">3.3. Les logs</a></li>
+<li><a href="#_les_propri_t_s">3.4. Les propriétés</a>
+<ul class="sectlevel3">
+<li><a href="#_fichier_de_propri_t_s">3.4.1. Fichier de propriétés</a></li>
+<li><a href="#_autres_sources_de_propri_t_s">3.4.2. Autres sources de propriétés</a></li>
+</ul>
+</li>
+<li><a href="#_cr_ation_d_un_jar_ex_cutable">3.5. Création d&#8217;un jar exécutable</a>
+<ul class="sectlevel3">
+<li><a href="#_exemple_avec_l_externalisation_des_propri_t_s">3.5.1. Exemple avec l&#8217;externalisation des propriétés</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_seconde_partie_r_cup_rer_traiter_et_stocker_les_donn_es">4. Seconde partie : récupérer, traiter et stocker les données</a>
+<ul class="sectlevel2">
+<li><a href="#_r_cup_ration_et_traitement_des_donn_es_avec_apache_camel">4.1. Récupération et traitement des données avec Apache Camel</a>
+<ul class="sectlevel3">
+<li><a href="#_apache_camel">4.1.1. Apache Camel</a></li>
+<li><a href="#_traitement_des_donn_es_xml">4.1.2. Traitement des données XML</a></li>
+<li><a href="#_traitements_sp_cifiques">4.1.3. Traitements spécifiques</a></li>
+<li><a href="#_stockage_des_donn_es">4.1.4. Stockage des données</a></li>
+</ul>
+</li>
+<li><a href="#_configuration_conditionnelle">4.2. Configuration conditionnelle</a></li>
+</ul>
+</li>
+<li><a href="#_troisi_me_partie_services_web_pages_web_s_curit">5. Troisième partie : services web, pages web, sécurité</a>
+<ul class="sectlevel2">
+<li><a href="#_services_web">5.1. Services web</a></li>
+<li><a href="#_pages_web">5.2. Pages web</a></li>
+<li><a href="#_s_curit">5.3. Sécurité</a></li>
+</ul>
+</li>
+<li><a href="#_quatri_me_partie_monitoring">6. Quatrième partie : monitoring</a>
+<ul class="sectlevel2">
+<li><a href="#_activator">6.1. Activator</a></li>
+<li><a href="#_r_cup_ration_des_informations_sur_l_application">6.2. Récupération des informations sur l&#8217;application</a></li>
+<li><a href="#_sant_de_l_application">6.3. Santé de l&#8217;application</a></li>
+<li><a href="#_m_triques_de_l_application">6.4. Métriques de l&#8217;application</a></li>
+<li><a href="#_grafana">6.5. Grafana</a>
+<ul class="sectlevel3">
+<li><a href="#_influx_db">6.5.1. Influx DB</a></li>
+<li><a href="#_grafana_2">6.5.2. Grafana</a></li>
+<li><a href="#_script_de_r_cup_ration_des_donn_es">6.5.3. Script de récupération des données</a></li>
+<li><a href="#_mise_en_place">6.5.4. Mise en place</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_conclusion">7. Conclusion</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_pr_sentation_de_spring_boot">1. Présentation de Spring Boot</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_un_projet_java_classique">1.1. Un projet Java classique</h3>
+<div class="paragraph">
+<p>Une application Java est de nos jours principalement une application
+<em>standalone</em> (par exemple un traitement de données en tâche de fond), ou une
+application Web (sur un Tomcat, ou un serveur d&#8217;application).</p>
+</div>
+<div class="paragraph">
+<p>Java est très bien outillé pour la mise en oeuvre de telles applications : Maven
+et Gradle pour la gestion du cycle de vie, tests unitaires, une multitude de
+<em>frameworks</em> divers et variés, des conteneurs pour exécuter les programmes.</p>
+</div>
+<div class="paragraph">
+<p>Souvent, le démarrage d&#8217;un projet Java consiste à faire de la tuyauterie :
+mettre en place les différentes librairies communément utilisées, faire
+attention aux différentes versions, préparer la configuration d&#8217;accès aux bases
+de données.</p>
+</div>
+<div class="paragraph">
+<p>Puis vient la phase de déploiement : dépôt d&#8217;un <em>war</em> dans un conteneur ? Ce
+<em>war</em> contient-il des jars embarqués, ou faut-il mettre à jour les jars partagés
+du Tomcat ? Comment gérer les fichiers de propriétés ? Et la supervision : y
+a-t-il des points d&#8217;entrées pour surveiller la santé de notre application ?</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spring_boot">1.2. Spring Boot</h3>
+<div class="paragraph">
+<p>Spring Boot apporte des solutions à ces problèmes. Avant de voir comment, voyons
+déjà ce que Spring Boot n&#8217;est pas :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ce n&#8217;est pas un <em>framework</em>, du moins pas comme un Spring Security, Guava, ou
+autre</p>
+</li>
+<li>
+<p>un générateur de code ; autrement dit, Spring Boot fait partie intégrante du
+projet, y compris lors de l&#8217;exécution de l&#8217;application</p>
+</li>
+<li>
+<p>un outil de maquettage ; il sert à faire des applications complètes (à noter
+que le site <a href="http://spring.io/">Spring IO</a> est un projet réalisé avec Spring
+Boot, dont les sources sont sur ce
+<a href="https://github.com/spring-io/sagan">dépôt Github</a>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Spring Boot simplifie la vie du développeur en :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>utilisant des librairies souvent utilisées, dans des versions cohérentes</p>
+</li>
+<li>
+<p>auto-configurant les composants qui sont détectés sur le classpath (par
+exemple, si Spring Boot détecte le driver Java de Mongo, ou un driver JDBC, ou
+Tomcat, etc., alors il configure automatiquement un ensemble de Bean (au sens
+Spring) pour utiliser ces composants)</p>
+</li>
+<li>
+<p>permemttant de personnaliser les composants, pour passer outre l&#8217;auto-
+configuration</p>
+</li>
+<li>
+<p>simplifiant la gestion des propriétés provenant de sources différentes</p>
+</li>
+<li>
+<p>exposant des points d&#8217;entrées pour la surveillance de l&#8217;application</p>
+</li>
+<li>
+<p>simplifiant le déploiement (un jar unique, ou un war pour Tomcat)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Ce ne sont là qu&#8217;une partie des avantages de Spring Boot. Pour aller plus loin,
+consulter les références suivantes :</p>
+</div>
+<div class="ulist">
+<div class="title">Références</div>
+<ul>
+<li>
+<p><a href="http://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/">Guide de référence Spring Boot</a></p>
+</li>
+<li>
+<p>La plupart des exemples sur <a href="http://spring.io/guides" class="bare">http://spring.io/guides</a> utilisent Spring Boot</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_d_roulement_de_l_atelier">2. Déroulement de l&#8217;atelier</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Nous allons créer une application en partant de zéro. Cette application va
+récupérer et traiter des fichiers de données, insérer ces données en base Mongo,
+puis exposer des services web REST pour interroger ces données.</p>
+</div>
+<div class="paragraph">
+<p>La configuration de l&#8217;application sera mise en place, le déploiement expliqué,
+et nous exposerons des services web <em>techniques</em> pour indiquer le statut
+opérationnel de l&#8217;application (est-ce que la base est OK ? l&#8217;espace disque OK ?)</p>
+</div>
+<div class="paragraph">
+<p>Enfin, nous allons exposer des métriques fonctionnelles, et les grapher.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_premi_re_partie_introduction_spring_boot">3. Première partie : introduction à Spring Boot</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_cr_ation_initiale_de_l_application">3.1. Création initiale de l&#8217;application</h3>
+<div class="paragraph">
+<p>Nous allons créer une application qui permet de récupérer les données provenant
+de fichiers sur le prix des carburants. Ces fichiers sont accessibles
+publiquement à l&#8217;adresse suivante :</p>
+</div>
+<div class="paragraph">
+<p><a href="http://www.prix-carburants.economie.gouv.fr/rubrique/opendata/" class="bare">http://www.prix-carburants.economie.gouv.fr/rubrique/opendata/</a></p>
+</div>
+<div class="paragraph">
+<p>Pour générer un squellette d&#8217;application, utiliser son IDE ou alors Maven en
+ligne de commande :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">mvn archetype:generate -DgroupId=jdev2015 -DartifactId=boot -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Modifier le <code>pom.xml</code> pour ne garder que l&#8217;essentiel :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+	&lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+	&lt;groupId&gt;org.jdev2015&lt;/groupId&gt;
+	&lt;artifactId&gt;carburants&lt;/artifactId&gt;
+	&lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+
+	&lt;name&gt;carburants&lt;/name&gt;
+	&lt;description&gt;Prix des carburants&lt;/description&gt;
+&lt;/project&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pour utiliser Spring Boot, le plus simple est de faire dépendre son <em>pom</em> du
+<em>pom</em> parent de Spring Boot. Cela permet d&#8217;hériter de propriétés, de versions
+cohérentes de librairies, etc.</p>
+</div>
+<div class="listingblock">
+<div class="title">Projet parent dans le pom</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+    &lt;version&gt;1.2.4.RELEASE&lt;/version&gt;
+&lt;/parent&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Ensuite, on peut utiliser des <em>starters</em> proposés par Spring Boot qui
+correspondent à un type d&#8217;application. Les <em>starters</em> incluent les librairies
+nécessaires, et la configuration qui va avec. Voici quelques <em>starters</em> (la
+liste complète est présente
+<a href="https://github.com/spring-projects/spring-boot/tree/master/spring-boot-starters">ici</a>) :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>batch</p>
+</li>
+<li>
+<p>websocket</p>
+</li>
+<li>
+<p>mail</p>
+</li>
+<li>
+<p>security</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Pour le moment, notre application est très basique, nous allons ajouter le
+<em>starter</em> <code>spring-boot-starter</code>, et ajouter la dépendance Guava :</p>
+</div>
+<div class="listingblock">
+<div class="title">Starter parent</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;dependencies&gt;
+	&lt;!-- Spring Boot --&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+		&lt;artifactId&gt;spring-boot-starter&lt;/artifactId&gt;
+	&lt;/dependency&gt;
+	&lt;!-- Guava --&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;com.google.guava&lt;/groupId&gt;
+		&lt;artifactId&gt;guava&lt;/artifactId&gt;
+		&lt;version&gt;18.0&lt;/version&gt;
+	&lt;/dependency&gt;
+&lt;/dependencies&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A noter que pour le <em>starter</em> Spring Boot, on n&#8217;a pas spécifié de version. En
+effet, le projet parent possède un bloc <code>dependencyManagement</code> qui définit les
+versions préconisées (et cohérentes entre-elles).</p>
+</div>
+<div class="paragraph">
+<p>Pour indiquer que nous utilisons Java 8, il faut en général le préciser à
+plusieurs endroits dans le pom (version <em>source</em>, version <em>target</em>). Ici, il
+suffit de positionner la propriété <code>java.version</code> :</p>
+</div>
+<div class="listingblock">
+<div class="title">Version de Java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;properties&gt;
+    &lt;java.version&gt;1.8&lt;/java.version&gt;
+&lt;/properties&gt;</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dans_le_code">3.1.1. Dans le code</h4>
+<div class="paragraph">
+<p>Une application Spring Boot est une application normale, avec un <code>main</code>, et des
+annotations :</p>
+</div>
+<div class="listingblock">
+<div class="title">Application.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication <i class="conum" data-value="1"></i><b>(1)</b>
+public class Application {
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args); <i class="conum" data-value="2"></i><b>(2)</b>
+	}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>L&#8217;annotation <code>@SpringBootApplication</code> est une méta-annotation qui déclenche
+l&#8217;auto-configuration et le scan de composants (au sens Spring classique)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Pour démarrer l&#8217;application, utiliser <code>SpringApplication.run</code></td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Si on exécute l&#8217;application, qui ne fait rien pour le moment, on peut néanmoins
+voir que les logs et JMX sont en place :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v1.2.4.RELEASE)
+
+2015-06-29 17:06:54.543  INFO 6772 --- [           main] org.jdev2015.Application                 : Starting Application on TPO-SDR2 with PID 6772 (C:\Users\sdr\Documents\CNRS\Projets\JDEV2015\app\carburants\target\classes started by SDR in C:\Users\sdr\Documents\CNRS\Projets\JDEV2015\app\carburants)
+2015-06-29 17:06:54.653  INFO 6772 --- [           main] s.c.a.AnnotationConfigApplicationContext : Refreshing org.springframework.context.annotation.AnnotationConfigApplicationContext@3cb1ffe6: startup date [Mon Jun 29 17:06:54 CEST 2015]; root of context hierarchy
+2015-06-29 17:06:56.199  INFO 6772 --- [           main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2015-06-29 17:06:56.214  INFO 6772 --- [           main] org.jdev2015.Application                 : Started Application in 2.301 seconds (JVM running for 3.253)
+2015-06-29 17:06:56.215  INFO 6772 --- [       Thread-1] s.c.a.AnnotationConfigApplicationContext : Closing org.springframework.context.annotation.AnnotationConfigApplicationContext@3cb1ffe6: startup date [Mon Jun 29 17:06:54 CEST 2015]; root of context hierarchy
+2015-06-29 17:06:56.216  INFO 6772 --- [       Thread-1] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On peut voir également que l&#8217;on a l&#8217;information du <em>PID</em> utilisé par le
+processus, qui a lancé l&#8217;application, &#8230;&#8203;</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_lancement_d_un_traitement">3.2. Lancement d&#8217;un traitement</h3>
+<div class="paragraph">
+<p>On a vu que l&#8217;application a démarré, et s&#8217;est arrêtée de suite. C&#8217;est parce
+qu&#8217;il n&#8217;y a aucune tâche de fond (comme un serveur web, &#8230;&#8203;)</p>
+</div>
+<div class="paragraph">
+<p>Pour ajouter un traitement particulier, il suffit d&#8217;implémenter l&#8217;interface
+<code>CommandLineRunner</code> et de déclarer cette classe à Spring par l&#8217;intermédiaire de
+l&#8217;annotation <code>@Component</code> :</p>
+</div>
+<div class="listingblock">
+<div class="title">services/Process.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.services;
+
+import org.slf4j.Logger;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
+@Component
+public class Process implements CommandLineRunner {
+	private static final Logger LOG = getLogger(Process.class);
+
+	@Override
+	public void run(String... args) throws Exception {
+		LOG.info("C'est parti !!!");
+	}
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_les_logs">3.3. Les logs</h3>
+<div class="paragraph">
+<p>On peut noter que le fait d&#8217;avoir ajouté Spring Boot fait que les logs sont
+automatiquement configurés. Spring Boot supporte les principaux <em>frameworks</em> de
+log, tels que JUL, Log4J, ou SLF4J que l&#8217;on va utiliser.</p>
+</div>
+<div class="paragraph">
+<p>Un pattern par défaut est mis en place, ainsi que les niveaux de logs.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Si le terminal le supporte, les logs sont affichés en couleur !
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Par défaut, seuls les logs de type <em>INFO</em> ou supérieur sont loggués. Pour
+configurer les niveux de logs, cela se fait dans le fichier de propriétés (que
+l&#8217;on verra plus en détail dans le paragraphe suivant) de Spring Boot, nommé
+<code>application.properties</code>. Il est également possible d&#8217;utiliser la syntaxe
+<a href="http://fr.wikipedia.org/wiki/YAML">YAML</a>, dans ce cas le fichier est appelé
+<code>application.yml</code> et se trouve dans le répertoire <code>resources</code>.</p>
+</div>
+<div class="paragraph">
+<p>Créons le fichier suivant pour modifier les niveaux de logs :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">logging.level:
+    org.jdev2015: DEBUG
+    org.springframework: INFO</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+il faut des espaces et non des tabulations dans ce fichier.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>On peut ainsi modifier le niveau de log de notre traitement à <em>DEBUG</em>, et le
+voir s&#8217;afficher dans les logs :</p>
+</div>
+<div class="listingblock">
+<div class="title">services/Process.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public void run(String... args) throws Exception {
+	LOG.debug("C'est parti !!!");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On obtient :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>2015-06-29 17:45:03.908 DEBUG 7256 --- [           main] org.jdev2015.services.Process            : C'est parti !!!</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_les_propri_t_s">3.4. Les propriétés</h3>
+<div class="sect3">
+<h4 id="_fichier_de_propri_t_s">3.4.1. Fichier de propriétés</h4>
+<div class="paragraph">
+<p>Nous allons paramétrer le répertoire dans lequel se trouvent les fichiers à
+traiter dans le fichier de propriétés :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">files:
+    base: C:/Users/sdr/Documents/CNRS/Projets/JDEV2015/app/data
+    in: ${base}/in <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>il est possible de faire référence à d&#8217;autres valeurs</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Pour récupérer cette valeur dans l&#8217;application, le plus simple est d&#8217;utiliser
+l&#8217;annotation <code>@Value</code> :</p>
+</div>
+<div class="listingblock">
+<div class="title">services/Process.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">@Value("${files.in}")
+private String inputDir;
+
+@Override
+public void run(String... args) throws Exception {
+	LOG.debug("Fetching files from {}", inputDir);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On obtient :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>2015-06-29 17:49:47.676 DEBUG 10236 --- [           main] org.jdev2015.services.Process            : Fetching files from C:/Users/sdr/Documents/CNRS/Projets/JDEV2015/app/data/in</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_autres_sources_de_propri_t_s">3.4.2. Autres sources de propriétés</h4>
+<div class="paragraph">
+<p>En fait, les propriétés que l&#8217;on récupère par l&#8217;annotation <code>@Value</code> sont une
+consolidation de plusieurs sources de propriétés, dont les principales sont :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>valeurs passées en ligne de commande au démarrage de l&#8217;application</p>
+</li>
+<li>
+<p>variables d&#8217;environnement (une propriété nommée <code>mon.port</code> est aussi reconnue
+en tant que variable d&#8217;environnement <code>MON_PORT</code>)</p>
+</li>
+<li>
+<p>valeurs présentes dans le fichier <em>application.yml</em> qui se trouve <strong>en dehors</strong>
+du jar packagé</p>
+</li>
+<li>
+<p>valeurs présentes dans le fichier <em>application.yml</em> qui se trouve <strong>à
+l&#8217;intérieur</strong> du jar packagé</p>
+</li>
+<li>
+<p>valeurs par défaut (par exemple <code>@Value("${mon.port:8181}")</code>)</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+voir <a href="http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config" class="bare">http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config</a>
+      pour la liste complète
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cr_ation_d_un_jar_ex_cutable">3.5. Création d&#8217;un jar exécutable</h3>
+<div class="paragraph">
+<p>Spring Boot peut créer un fichier <em>jar</em> exécutable. Ce fichier jar contiendra
+toutes les librairies nécessaires au bon fonctionnement de l&#8217;application. La
+technique utilisée n&#8217;est pas une mise à plat de toutes les classes, ce qui peut
+poser problème, mais bien des jars dans le jar.</p>
+</div>
+<div class="paragraph">
+<p>Avec Maven, il faut déclarer le plugin suivant :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;build&gt;
+	&lt;plugins&gt;
+		&lt;plugin&gt;
+			&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+			&lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+		&lt;/plugin&gt;
+	&lt;/plugins&gt;
+&lt;/build&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Ensuite, on peut créer le jar avec la commande :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">mvn clean package</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On peut alors exécuter l&#8217;application :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">java -jar target/carburants-1.0-SNAPSHOT.jar</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exemple_avec_l_externalisation_des_propri_t_s">3.5.1. Exemple avec l&#8217;externalisation des propriétés</h4>
+<div class="paragraph">
+<p>Dans le jar se trouve le fichier <code>application.yml</code> qui contient donc les valeurs
+<em>par défaut</em>. Si l&#8217;on souhaite utiliser une autre valeur, il suffit par exemple
+de la passer en paramètre au jar :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">java -jar target/carburants-1.0-SNAPSHOT.jar --files.base=c:/monrep
+
+...
+2015-06-29 18:00:13.989 DEBUG 7236 --- [           main] org.jdev2015.services.Process            : Fetching files from c:/monrep/in</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_seconde_partie_r_cup_rer_traiter_et_stocker_les_donn_es">4. Seconde partie : récupérer, traiter et stocker les données</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_r_cup_ration_et_traitement_des_donn_es_avec_apache_camel">4.1. Récupération et traitement des données avec Apache Camel</h3>
+<div class="paragraph">
+<p>Les données sont des fichiers XML (un par année) contenant chacun une liste de
+points de vente de carburant avec la ville et les coordonnées GPS, le type de
+carburant, son prix et la date.</p>
+</div>
+<div class="paragraph">
+<p>Ces fichiers sont présents à cette adresse :
+<a href="http://www.prix-carburants.economie.gouv.fr/rubrique/opendata/" class="bare">http://www.prix-carburants.economie.gouv.fr/rubrique/opendata/</a></p>
+</div>
+<div class="paragraph">
+<p>Chaque fichier fait environ 100 Mo.</p>
+</div>
+<div class="paragraph">
+<p>Nous voulons que l&#8217;application scrute de manière périodique un répertoire
+donné, sélectionne les fichiers correspondant à un nom particulier, lise le XML
+et insère les données dans une base Mongo, puis, une fois chaque fichier traité,
+le déplace dans un répertoire <em>done</em>.</p>
+</div>
+<div class="paragraph">
+<p>Pour lire un fichier XML en Java, il existe deux grandes possibilités :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>utiliser DOM : n&#8217;est pas envisageable avec des fichiers de cette taille, car
+la totalité du contenu est chargée en mémoire</p>
+</li>
+<li>
+<p>utiliser SAX ou StAX : le fichier est lu et des événements sont déclenchés,
+le fichier n&#8217;est pas chargé entièrement en mémoire.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Cependant, utiliser SAX est lourd à mettre en place.</p>
+</div>
+<div class="sect3">
+<h4 id="_apache_camel">4.1.1. Apache Camel</h4>
+<div class="paragraph">
+<p>Nous allons utiliser Apache Camel, qui s&#8217;intègre très bien dans un
+environnement Spring (et Spring Boot) pour effectuer ce traitement.</p>
+</div>
+<div class="paragraph">
+<p>Il faut ajouter les dépendances dans le <em>pom</em> :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;!-- Camel --&gt;
+&lt;dependency&gt;
+	&lt;groupId&gt;org.apache.camel&lt;/groupId&gt;
+	&lt;artifactId&gt;camel-spring-boot&lt;/artifactId&gt;
+	&lt;version&gt;2.15.2&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Nous allons ajouter deux propriétés :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">files:
+    pattern: PrixCarburants_annuel_*.xml
+    done: done</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pour intégrer Camel dans une application Spring Boot, il suffit de déclarer une
+classe annotée <code>@Component</code> qui étend <code>RouteBuilder</code> :</p>
+</div>
+<div class="listingblock">
+<div class="title">routes/ProcessXMLFilesRoute.java</div>
+<div class="content">
+<pre>package org.jdev2015.routes;
+
+import org.apache.camel.builder.RouteBuilder;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ProcessXMLFilesRoutes extends RouteBuilder {
+
+	@Override
+	public void configure() throws Exception {
+		from("file:///{{files.in}}?antInclude={{files.pattern}}&amp;move={{files.done}}")
+				.log("Processing file ${file:onlyname}");
+	}
+}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Une route Camel définit un point de départ (<em>from</em>) et les traitements à
+réaliser. Ici, la route scrute les fichiers du répertoire correspondant à la
+propriété <code>files.in</code> toutes les 500 ms (valeur par défaut). Quand un fichier
+correspond au pattern indiqué, il le traite en déroulant le reste de la route.
+Quand le traitement est terminé, le fichier est déplacé dans le répertoire de
+<code>files.done</code>.</p>
+</div>
+<div class="paragraph">
+<p>Pour que l&#8217;application ne s&#8217;arrête pas de suite, il faut un peu modifier le code
+de la classe principale :</p>
+</div>
+<div class="listingblock">
+<div class="title">Application.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">public static void main(String[] args) {
+	ApplicationContext applicationContext = new SpringApplication(Application.class).run(args);
+	CamelSpringBootApplicationController applicationController = applicationContext.getBean(CamelSpringBootApplicationController.class);
+	applicationController.blockMainThread();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On obtient :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>2015-06-29 22:42:58.561  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2007.xml
+2015-06-29 22:42:58.572  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2008.xml
+2015-06-29 22:42:58.576  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2009.xml
+2015-06-29 22:42:58.580  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2010.xml
+2015-06-29 22:42:58.583  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2011.xml
+2015-06-29 22:42:58.587  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2012.xml
+2015-06-29 22:42:58.592  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2013.xml
+2015-06-29 22:42:58.601  INFO 5600 --- [015/app/data/in] route1                                   : Processing file PrixCarburants_annuel_2014.xml</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_traitement_des_donn_es_xml">4.1.2. Traitement des données XML</h4>
+<div class="paragraph">
+<p>Les données à traiter ont cette forme :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;pdv_liste&gt;
+    &lt;pdv id="1000001" latitude="4620114" longitude="519791" cp="01000" pop="R"&gt;
+        &lt;adresse&gt;ROUTE NATIONALE&lt;/adresse&gt;
+        &lt;ville&gt;SAINT-DENIS-L&amp;#xE8;S-BOURG&lt;/ville&gt;
+        &lt;ouverture debut="01:00" fin="01:00" saufjour=""/&gt;
+        &lt;prix nom="Gazole" id="1" maj="2014-01-02 11:08:03" valeur="1304"/&gt;
+        &lt;prix nom="Gazole" id="1" maj="2014-01-04 09:54:03" valeur="1304"/&gt;
+        &lt;prix nom="Gazole" id="1" maj="2014-01-05 10:27:09" valeur="1304"/&gt;
+        &lt;prix nom="Gazole" id="1" maj="2014-01-06 09:07:51" valeur="1304"/&gt;
+        &lt;prix nom="Gazole" id="1" maj="2014-01-07 09:23:56" valeur="1304"/&gt;
+    &lt;/pdv&gt;
+    &lt;pdv&gt;
+    ...
+    &lt;/pdv&gt;
+&lt;/pdv_liste&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Il faut récupérer, pour chaque élément <code>pdv</code>, la latitude et longitude, la
+ville, et la liste de prix avec le nom, la valeur, et la date.</p>
+</div>
+<div class="paragraph">
+<p>Camel fournit une solution simple, élégante sans tout charger en mémoire. Il
+suffit de découper sur la balise <code>pdv</code> :</p>
+</div>
+<div class="listingblock">
+<div class="title">routes/ProcessXMLFilesRoutes.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">@Component
+public class ProcessXMLFilesRoutes extends RouteBuilder {
+
+	@Override
+	public void configure() throws Exception {
+		from("file:///{{files.in}}?antInclude={{files.pattern}}&amp;move={{files.done}}")
+				.log("Processing file ${file:onlyname}")
+				.to("direct:processXML"); <i class="conum" data-value="1"></i><b>(1)</b>
+
+		from("direct:processXML")
+				.split().tokenizeXML("pdv").streaming() <i class="conum" data-value="2"></i><b>(2)</b>
+				.setHeader("city").xpath("/pdv/ville/text()") <i class="conum" data-value="3"></i><b>(3)</b>
+				.log("City: ${header.city}"); <i class="conum" data-value="4"></i><b>(4)</b>
+	}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Il est possible de chaîner les routes avec le composant <em>direct</em>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>On indique à Camel de découper l&#8217;entrée (qui ici est un fichier, mais qui
+pourrait aussi être le retour d&#8217;un appel à un service web, &#8230;&#8203;), en
+utilisant un <em>tokenizer</em> de type XML. De plus, on lui indique (<em>streaming</em>)
+de le faire sans tout charger en mémoire</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>On itère donc sur chaque élément de type <code>pdv</code>. On récupère facilement des
+données avec une requête XPath</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>On afiche les informations</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>On obtient :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>2015-06-29 23:08:57.165  INFO 6452 --- [015/app/data/in] route2                                   : City: SAINT-DENIS-LÃ¨S-BOURG
+2015-06-29 23:08:57.182  INFO 6452 --- [015/app/data/in] route2                                   : City: BOURG-EN-BRESSE
+2015-06-29 23:08:57.186  INFO 6452 --- [015/app/data/in] route2                                   : City: Bourg-en-Bresse</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_traitements_sp_cifiques">4.1.3. Traitements spécifiques</h4>
+<div class="paragraph">
+<p>On voit cependant deux problèmes : la gestion des accents et de la casse. On
+voudrait aussi filtrer sur les villes à traiter. Pour cela, on va mettre le
+code dans une classe, et appeler une méthode de cette classe depuis notre route.</p>
+</div>
+<div class="paragraph">
+<p>Commençons par créer notre classe du domaine :</p>
+</div>
+<div class="listingblock">
+<div class="title">domain/Price.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.domain;
+
+import com.google.common.base.MoreObjects;
+
+import java.util.Date;
+
+public class Price {
+	private double[] loc;
+	private String ville;
+	private String type;
+	private Date date;
+	private double prix;
+
+	public Price() {
+	}
+
+	public Price(String longitude, String latitude, String ville, String type, Date date, String priceValue) {
+		double x = Double.parseDouble(longitude) / 100_000;
+		double y = Double.parseDouble(latitude) / 100_000;
+		setLoc(new double[]{x, y});
+
+		setVille(ville);
+		setType(type);
+		setDate(date);
+		setPrix(Double.parseDouble(priceValue) / 1_000);
+	}
+
+	public double[] getLoc() {
+		return loc;
+	}
+
+	public void setLoc(double[] loc) {
+		this.loc = loc;
+	}
+
+	public String getVille() {
+		return ville;
+	}
+
+	public void setVille(String ville) {
+		this.ville = ville;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+	public double getPrix() {
+		return prix;
+	}
+
+	public void setPrix(double prix) {
+		this.prix = prix;
+	}
+
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("loc", loc)
+				.add("ville", ville)
+				.add("type", type)
+				.add("date", date)
+				.add("prix", prix)
+				.toString();
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Cette classe est tout ce qu&#8217;il y a de plus classique. A noter toutefois
+l&#8217;utilisation de Guava pour simplifier la méthode <code>toString</code>, et un constructeur
+pour simplifier la création.</p>
+</div>
+<div class="paragraph">
+<p>Pour déterminer si la ville de l'élément en cours de traitement fait partie de
+la liste des villes voulues, on va mettre cette liste de villes en tant que
+propriétés. L&#8217;avantage à utiliser un format comme YAML et qu&#8217;il supporte
+nativement le format de liste :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">price.filter:
+    cities:
+        - toulouse
+        - bordeaux
+        - paris
+        - lille</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pour récupérer les propriétés de type liste dans Spring, il ne faut pas utiliser
+<code>@Value</code>, mais une annotation de classe :</p>
+</div>
+<div class="listingblock">
+<div class="title">services/CityFilter.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.services;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+@ConfigurationProperties(prefix = "price.filter") <i class="conum" data-value="1"></i><b>(1)</b>
+public class CityFilter {
+	private List&lt;String&gt; cities = new ArrayList&lt;&gt;();
+
+	public List&lt;String&gt; getCities() { <i class="conum" data-value="2"></i><b>(2)</b>
+		return cities;
+	}
+
+	public boolean keep(String city) {
+		return cities.contains(city);
+	}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td><code>@ConfigurationProperties</code> avec <code>prefix</code> permet de charger toutes les
+propriétés avec ce préfixe dans cette classe.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Le <em>getter</em> porte le nom de la propriété sans le préfixe.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>On va donc pouvoir utiliser cette classe en l&#8217;injectant.</p>
+</div>
+<div class="paragraph">
+<p>Notre classe de traitement s&#8217;appelera <code>Transform</code> et aura l&#8217;annotation
+<code>@Component</code>. Elle sera ainsi dans le registre de Spring, et accessible à Camel.
+Plusieurs points intéressants sont à noter dans cette classe :</p>
+</div>
+<div class="listingblock">
+<div class="title">services/Transform.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.services;
+
+import com.google.common.base.Strings;
+import org.apache.camel.language.XPath;
+import org.jdev2015.domain.Price;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.w3c.dom.Element;
+
+import java.text.DateFormat;
+import java.text.Normalizer;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Component
+public class Transform {
+	private DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	@Autowired
+	private CityFilter cityFilter;
+
+	public List&lt;Price&gt; toPrice(@XPath("/pdv/@latitude") String latitude, <i class="conum" data-value="1"></i><b>(1)</b>
+							   @XPath("/pdv/@longitude") String longitude, <i class="conum" data-value="2"></i><b>(2)</b>
+							   @XPath("/pdv/ville/text()") String city,
+							   @XPath("/pdv/prix") List&lt;Element&gt; prices) {
+
+		if (Strings.isNullOrEmpty(latitude)
+				|| Strings.isNullOrEmpty(longitude)
+				|| Strings.isNullOrEmpty(city)
+				|| prices == null || prices.isEmpty()) {
+			return Collections.emptyList(); <i class="conum" data-value="3"></i><b>(3)</b>
+		}
+
+		String nfdCity = Normalizer.normalize(city, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase(); <i class="conum" data-value="4"></i><b>(4)</b>
+		if (!cityFilter.keep(nfdCity)) {
+			return Collections.emptyList();
+		}
+
+		List&lt;Price&gt; collect = prices.stream() <i class="conum" data-value="5"></i><b>(5)</b>
+				.map(elem -&gt; createPrice(longitude, latitude, nfdCity, elem))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(Collectors.toList());
+		return collect;
+	}
+
+	private Optional&lt;Price&gt; createPrice(String longitude, String latitude, String city, Element element) {
+		String type = element.getAttribute("nom");
+		String maj = element.getAttribute("maj");
+		String priceValue = element.getAttribute("valeur");
+		if (Strings.isNullOrEmpty(type) || Strings.isNullOrEmpty(maj) || Strings.isNullOrEmpty(priceValue)) {
+			return Optional.empty();
+		}
+
+		try {
+			Date date = df.parse(maj);
+			Price price = new Price(longitude, latitude, city, type, date, priceValue);
+			return Optional.of(price);
+		} catch (ParseException e) {
+			return Optional.empty();
+		}
+	}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Camel mappe le résultat de cette méthode dans le contenu de l'échange en
+cours.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>L&#8217;annotation <code>@XPath</code> provient de Camel, et permet facilement d&#8217;injecter le
+résultat de la requête dans les paramètres de la méthode lors de son appel,
+en fonction du contenu de la route à ce moment-là (ici, un élément <code>pdv</code>).</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Si les données ne sont pas valides, une collection vide est retournée</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Cette technique permet de supprimer les caractères spéciaux par leur
+équivalent <em>ascii</em></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Utilisation des <em>streams</em> de Java 8. Sur la liste d'élément XML contenant
+chacun un prix/date/type pour une ville donnée, on transforme (<em>map</em>) cet
+élément en <code>Price</code> (appel de la méthode <code>createPrice</code>), puis on ne garde
+que ceux pour lesquels on a une valeur (<code>isPresent</code>) que l&#8217;on récupère
+(<code>get</code>). Enfin, on transforme le tout en liste.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Le dernier changement est dans la route Camel :</p>
+</div>
+<div class="listingblock">
+<div class="title">routes/ProcessXMLFilesRoutes.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">from("direct:processXML")
+	.split().tokenizeXML("pdv").streaming()
+	.beanRef("transform") <i class="conum" data-value="1"></i><b>(1)</b>
+	.filter(simple("${body.isEmpty()} == false")) <i class="conum" data-value="2"></i><b>(2)</b>
+	.log(LoggingLevel.INFO, "PRICE", "${body.size()} prices");</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Appel du <em>bean</em>. La valeur <code>transform</code> correspond au nom du <em>bean</em> dans le
+registre de Spring. Ici, ce nom est déduit du nom de la classe. A noter que
+l&#8217;on n&#8217;a pas eu besoin de préciser la méthode à appeller. Camel <em>devine</em>
+laquelle correspond, sur la base des annotations, des types des paramètres
+et de la valeur de retour.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>On ne traite que les données pour lesquelles on a des prix.</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_stockage_des_donn_es">4.1.4. Stockage des données</h4>
+<div class="paragraph">
+<p>Maintenant, il faut stocker ces données dans la base Mongo. On va commencer par
+modifier le <em>pom</em> :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-data-mongodb&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On importe le <em>starter</em> de Spring Data pour MongoDB. Cela va automatiquement
+ajouter les dépendances sur Spring Data, Mongo, et autres dépencdances
+associées. Cela déclenche également l&#8217;auto-configuration de la connexion à
+Mongo. Notamment, si les paramètres suivant (entre autres) sont définis, ils
+sont utilisés par Spring Boot pour configurer la connexion à Mongo :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>spring.data.mongodb.host</code></p>
+</li>
+<li>
+<p><code>spring.data.mongodb.port</code></p>
+</li>
+<li>
+<p><code>spring.data.mongodb.database</code></p>
+</li>
+<li>
+<p>&#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Si on ne met rien, les valeurs par défaut sont utilisées, typiquement une
+connexion à une base de données locale.</p>
+</div>
+<div class="paragraph">
+<p>On modifie notre fichier de configuration pour indiquer le nom de la base que
+l&#8217;on va utiliser :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">spring.data.mongodb:
+    database: jdev</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pour insérer les données dans Mongo, on a ici deux grandes possibilités.</p>
+</div>
+<div class="paragraph">
+<p><strong>Première possibilité</strong> :</p>
+</div>
+<div class="paragraph">
+<p>On peut, depuis notre route Camel, appeler un <em>bean</em> qui va insérer la données
+dans Mongo.</p>
+</div>
+<div class="paragraph">
+<p>Nous allons pour le moment utiliser le principe du
+<a href="http://docs.spring.io/spring-data/data-mongo/docs/1.7.0.RELEASE/reference/html/#repositories"><em>Repository</em></a>
+qui permet de définir les opérations de base sur Mongo, ainsi que des opérations
+personnalisées à partir du nom de la méthode. Cela se fait en créant une
+interface étandant l&#8217;interface <code>MongoRepository</code> qui définit les méthodes
+<code>save</code>, <code>findAll</code>, <code>insert</code>, etc.</p>
+</div>
+<div class="paragraph">
+<p>On peut ensuite définir dans cette interface nos propres méthodes en suivant une
+certaine nomenclature, et Spring générera automatiquement le code nécessaire
+pour implémenter cette méthode.
+Par exemple, une méthode nommée <code>findByLastnameAndFirstnameAllIgnoreCase</code>
+permettra de faire des recherches sur le nom et le prénom, sans tenir compte de
+la casse.</p>
+</div>
+<div class="listingblock">
+<div class="title">services/PriceRepository.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.services;
+
+import org.jdev2015.domain.Price;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface PriceRepository extends MongoRepository&lt;Price, String&gt; {
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Deuxième possibilité</strong> :</p>
+</div>
+<div class="paragraph">
+<p>Nous allons utiliser le composant Mongo de Camel pour faire nos insertions en
+base. Pour cela, on ajouter la dépendance Camel-MongoDB dans le <em>pom</em> :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+	&lt;groupId&gt;org.apache.camel&lt;/groupId&gt;
+	&lt;artifactId&gt;camel-mongodb&lt;/artifactId&gt;
+	&lt;version&gt;2.15.2&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Le composant s&#8217;utilise de cette façon :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>mongodb:connectionBean?database=databaseName&amp;collection=collectionName&amp;operation=operationName[&amp;moreOptions...]</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Il faut indiquer à Camel un <em>bean</em> de connexion à Mongo. Comment récupérer celui
+que Spring a instancié ? On va utiliser un autre aspect de Spring qui est
+l&#8217;annotation <code>@Configuration</code>. Cette annotation est détectée par Spring Boot, et
+en fonction du type de la classe qui porte cette annotation, certaines actions
+sont effectuées.</p>
+</div>
+<div class="paragraph">
+<p>Pour nous, nous allons étendre <code>AbstractMongoConfiguration</code> pour personnaliser
+la configuration de Mongo.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Cet aspect est essentiel : Spring Boot nous facilite la vie en autoconfigurant
+beaucoup de choses. Cependant, si on veut reprendre la main, on peut toujours
+le faire.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Voici cette classe qui nous permet de reprendre la main sur la configuration de
+Mongo :</p>
+</div>
+<div class="listingblock">
+<div class="title">config/MongoConfig.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.config;
+
+import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
+
+@Configuration <i class="conum" data-value="1"></i><b>(1)</b>
+public class MongoConfig extends AbstractMongoConfiguration{
+	@Value("${spring.data.mongodb.database}") <i class="conum" data-value="2"></i><b>(2)</b>
+	private String database;
+
+	@Override
+	protected String getDatabaseName() {
+		return database;
+	}
+
+	@Override
+	@Bean <i class="conum" data-value="3"></i><b>(3)</b>
+	public Mongo mongo() throws Exception {
+		return new MongoClient();
+	}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>L&#8217;annotation <code>@Configuration</code> sera détectée par Spring</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Récupération de la propriété contenant le nom de la base Mongo</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>En plus, l&#8217;annotation <code>@Bean</code> ajoutée permet d&#8217;enregistrer cet objet dans le
+contexte de Spring. On pourra ensuite l&#8217;utiliser dans la route Mongo.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Avant de modifier notre route Camel, on a créer une méthode permettant de
+transformer notre objet <code>Price</code> en <code>DBObject</code> Mongo :</p>
+</div>
+<div class="listingblock">
+<div class="title">services/Transform.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">@Autowired
+private MongoTemplate mongoTemplate;
+
+public List&lt;DBObject&gt; toDBObject(@Body List&lt;Price&gt; prices) { <i class="conum" data-value="1"></i><b>(1)</b>
+	return prices.stream()
+			.map(item -&gt; (DBObject) mongoTemplate.getConverter().convertToMongoType(item)) <i class="conum" data-value="2"></i><b>(2)</b>
+			.collect(Collectors.toList());
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Camel va mapper le contenu de l'échange dans <code>prices</code> grâce à l&#8217;annotation
+<code>@Body</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Un <code>MongoTemplate</code> a été récupéré par injection (il a été automatiquement
+configuré par Spring Boot), et on l&#8217;utilise pour transformer chaque objet
+de la liste en objet pour Mongo, grâce aux <em>streams</em> de Java 8.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Deux derniers ajustements dans le fichier de propriétés avant de modifier notre
+route Camel. Camel essaie de convertir le contenu de l'échange du type actuel
+vers le type requis par le composant. Quand Camel est utilisé avec Spring Boot,
+il utilise en plus de ses propres <em>converters</em> ceux offerts par Spring. Or ici,
+Camel va transformer (par un <em>converter</em> de Spring) le type <code>List</code> vers le type
+<code>DBObject</code> de Mongo, ce que l&#8217;on ne veut pas car on a déjà construit notre liste
+d&#8217;objets à insérer. On ajoute donc cette propriétés dans le fichier de
+configuration :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">camel.springboot.typeConversion: false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Enfin, on va exclude certaines lignes de logs <code>WARN</code> :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">logging.level:
+    org.jdev2015: DEBUG
+    org.springframework: INFO
+    org.apache.camel.component.mongodb.converters: ERROR <i class="conum" data-value="1"></i><b>(1)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Les <code>WARN</code> du <em>converter</em> pour nous indiquer qu&#8217;il <em>fallback</em> ne seront
+plus affichés.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>On peut maintenant adapter notre route Camel :</p>
+</div>
+<div class="listingblock">
+<div class="title">routes/ProcessXMLFiles.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">from("direct:processXML")
+		.split().tokenizeXML("pdv").streaming()
+		.beanRef("transform", "toPrice") <i class="conum" data-value="1"></i><b>(1)</b>
+		.filter(simple("${body.isEmpty()} == false"))
+		.beanRef("transform", "toDBObject")
+		.to("mongodb:mongo?database=jdev&amp;collection=prices&amp;operation=insert"); <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Comme on va appeler deux méthodes différentes du même <em>bean</em>, on indique à
+Camel la méthode à appeler. On n&#8217;avait pas eu besoin de le faire
+précédemment car une seule méthode était <em>public</em>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>On appelle le composant <em>mongodb</em> avec le <em>bean</em> créé précédemment, en
+indiquant la base, la collection, et le type d&#8217;opération. Ici l&#8217;opération
+est un <em>insert</em> en base. Comme la donnée dans l'échange est une liste de
+<em>DBObject</em>, c&#8217;est un insert multiple qui est fait.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Vérifions que tout fonctionne : il faut d&#8217;abord démarrer une instance de Mongo.
+Puis déposer un fichier dans le répertoire de travail, et lancer le programme.
+Après traitement d&#8217;un fichier :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&gt; use jdev
+switched to db jdev
+&gt; db.prices.findOne()
+{
+        "_id" : ObjectId("55931e7d38d8a30d9270f50d"),
+        "loc" : [
+                1.41048,
+                43.58797
+        ],
+        "city" : "toulouse",
+        "type" : "Gazole",
+        "date" : ISODate("2014-01-06T21:19:00Z"),
+        "price" : 1.393
+}
+&gt; db.prices.count()
+32045</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Les données sont bien insérées en base !</p>
+</div>
+<div class="paragraph">
+<p>Pour la suite, on peut utiliser un export des données (fichier <code>prix.js</code>) :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">$ mongoimport -d jdev -c prices prix.js
+2015-07-01T01:11:18.252+0200    connected to: localhost
+2015-07-01T01:11:21.245+0200    [################........] jdev.prices  21.9 MB/31.5 MB (69.5%)
+2015-07-01T01:11:22.698+0200    imported 180691 documents</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On importe les données dans la base <code>jdev</code>, et la collection <code>prices</code>.
+On utilisera ces données pour la suite (environ 180 000 entrées).</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_conditionnelle">4.2. Configuration conditionnelle</h3>
+<div class="paragraph">
+<p>Maintenant que l&#8217;on a pu récupérer nos données à partir de fichiers, et les
+stocker en base, on va les exposer via des services web. Mais si par exemple on
+ne veut plus que la route se déclenche, il faudrait pouvoir garder le code mis
+en place, mais désactiver sa mise en place.</p>
+</div>
+<div class="paragraph">
+<p>Avec Spring Boot, quand on déclare des composants, on peut indiquer dans quelles
+condition ces composants doivent être pris en compte ou pas. Pour cela, il
+existe différentes annotations, telles que :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>ConditionalOnProperty</code></p>
+</li>
+<li>
+<p><code>ConditionalOnClass</code></p>
+</li>
+<li>
+<p><code>ConditionalOnMissingClass</code></p>
+</li>
+<li>
+<p><code>ConditionalOnExpression</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>On va donc utiliser cette possibilité pour désactiver les routes Camel en
+fonction d&#8217;une propriété (dans le fichier <code>application.yml</code>, variable
+d&#8217;environnement, paramètres en ligne de commande de l&#8217;application, &#8230;&#8203;).</p>
+</div>
+<div class="paragraph">
+<p>Il suffit de mettre la propriété dans le fichier de configuration :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">process.carburant: false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Puis d&#8217;ajouter l&#8217;annotation :</p>
+</div>
+<div class="listingblock">
+<div class="title">routes/ProcessXMLFilesRoutes.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">@ConditionalOnExpression("'${process.carburant}'=='true'")</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Si on lance l&#8217;application, on retrouvera dans les logs le fait qu&#8217;aucune route
+Camel n&#8217;a été activée :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>2015-07-01 09:41:02.957  INFO 4948 --- [           main] o.a.camel.spring.SpringCamelContext      : Total 0 routes, of which 0 is started.</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troisi_me_partie_services_web_pages_web_s_curit">5. Troisième partie : services web, pages web, sécurité</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_services_web">5.1. Services web</h3>
+<div class="paragraph">
+<p>Pour exposer un service web, il faut un serveur web. Spring Boot permet de
+très facilement utiliser un Tomcat (ou Jetty ou Undertow) embarqué. Il suffit
+pour cela d&#8217;ajouter la dépendance adéquate :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Nous allons commencer par exposer un service web qui retourne les données des
+stations les plus proches à partir d&#8217;une longitude et lattitude. Pour cela, il
+faut d&#8217;abord créer un index géospatial dans Mongo :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-js" data-lang="js">db.prices.createIndex({loc: "2dsphere"})</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pour exposer un service web de type REST, il suffit d&#8217;annoter une classe avec
+<code>@RestController</code>. Spring Boot va automatiquement mettre en place la tuyauterie
+nécessaire.</p>
+</div>
+<div class="paragraph">
+<p>Ici, créons la classe suivante :</p>
+</div>
+<div class="listingblock">
+<div class="title">rest/PriceController.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.rest;
+
+import org.jdev2015.domain.Price;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.NearQuery;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+
+@RestController <i class="conum" data-value="1"></i><b>(1)</b>
+@RequestMapping("/prices") <i class="conum" data-value="2"></i><b>(2)</b>
+public class PriceController {
+	@Autowired
+	private MongoTemplate mongoTemplate;
+
+	@RequestMapping(value = "/near", method = GET) <i class="conum" data-value="3"></i><b>(3)</b>
+	public GeoResults&lt;Price&gt; getNear(@RequestParam double lon, @RequestParam double lat, @RequestParam int max) { <i class="conum" data-value="4"></i><b>(4)</b>
+		NearQuery q = NearQuery.near(lon, lat).maxDistance(new Distance(max, Metrics.KILOMETERS)); <i class="conum" data-value="5"></i><b>(5)</b>
+		GeoResults&lt;Price&gt; geoResults = mongoTemplate.geoNear(q, Price.class, "prices"); <i class="conum" data-value="6"></i><b>(6)</b>
+		return geoResults; <i class="conum" data-value="7"></i><b>(7)</b>
+	}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Cette annotation déclare un service web <em>REST</em></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Racine de l&#8217;URL</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>URL pour accéder au service web, avec le verbe HTTP <em>GET</em></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>On peut récupérer les paramètres de l&#8217;url avec <code>@RequestParam</code>. A noter que
+l&#8217;on n&#8217;a pas eu besoin de préciser le nom du paramètres,
+(<code>@RequestParam("lon")</code> par exemple). Cela est possible uniquement avec
+Java 8.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Création de la requête (utilisation de Spring Data)</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Récupération des résultats, qui sont automatiquement mappés vers des
+instances de notre classe du domaine <code>Price</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>On retourne les résultats. Spring va automatiquement transformer le résultat
+en objet JSON.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>On lance l&#8217;application, et on peut accéder aux données avec cette URL :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>http://localhost:8080/prices/near?lon=1.518960&amp;lat=43.564560&amp;max=10</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Exemple</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">$ curl -i -s 'http://localhost:8080/prices/near?lon=1.518960&amp;lat=43.564560&amp;max=10' | head -n 50
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Content-Type: application/json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 01 Jul 2015 07:59:16 GMT
+
+{
+  "averageDistance" : {
+    "value" : 2.583824413612455,
+    "metric" : "KILOMETERS"
+  },
+  "content" : [ {
+    "content" : {
+      "loc" : [ 1.49007, 43.57459 ],
+      "ville" : "toulouse",
+      "type" : "Gazole",
+      "date" : 1168308000000,
+      "prix" : 0.979
+    },
+    "distance" : {
+      "value" : 2.5838244136124477,
+      "metric" : "KILOMETERS"
+    }
+  }, {
+    "content" : {
+      "loc" : [ 1.49007, 43.57459 ],
+      "ville" : "toulouse",
+      "type" : "Gazole",
+      "date" : 1168394400000,
+      "prix" : 0.979
+    },
+    "distance" : {
+      "value" : 2.5838244136124477,
+      "metric" : "KILOMETERS"
+    }
+  }, {
+    "content" : {
+      "loc" : [ 1.49007, 43.57459 ],
+      "ville" : "toulouse",
+      "type" : "Gazole",
+      "date" : 1168567200000,
+      "prix" : 0.969
+    },
+    "distance" : {
+      "value" : 2.5838244136124477,
+      "metric" : "KILOMETERS"
+    }
+  }, {
+    "content" : {
+      "loc" : [ 1.49007, 43.57459 ],</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Pour avoir les données JSON formattées, il suffit d&#8217;ajouter la propriété
+suivante :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>spring.jackson.serialization.indent_output: true</pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Nous allons exposer un second service web, qui effectuera un calcul sur le
+serveur en utilisant le <em>framework</em> d&#8217;aggrégation de Mongo. L&#8217;objectif est
+d&#8217;obtenir, pour une ville et un type de carburant donné, la moyenne par an de
+tous les prix de toutes les stations de cette ville.</p>
+</div>
+<div class="paragraph">
+<p>En Mongo, la requête s'écrirait :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">db.prices.aggregate([
+    {$match: {ville:"bordeaux", type:"Gazole"}},
+    {$project: {
+        year: {$year: "$date"},
+        prix: 1
+    }},
+    {$group: {
+        _id: "$year",
+        moyenne: {$avg: "$prix"}
+    }},
+    {$sort: {_id: 1}}
+])</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On va créer une petite classe pour récupérer les résultats de l&#8217;aggrégation :</p>
+</div>
+<div class="listingblock">
+<div class="title">domain/MeanPrice.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.domain;
+
+import org.springframework.data.annotation.Id;
+
+public class MeanPrice {
+	@Id
+	public long annee;
+	public double moyenne;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On peut maintenant écrire notre service web :</p>
+</div>
+<div class="listingblock">
+<div class="title">rest/PriceController.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">@RequestMapping(value = "/moyenne/{ville}/{type}", method = GET)
+public List&lt;double[]&gt; getMoyenne(@PathVariable String ville, @PathVariable String type) { <i class="conum" data-value="1"></i><b>(1)</b>
+	Aggregation aggregation = newAggregation( <i class="conum" data-value="2"></i><b>(2)</b>
+			match(Criteria.where("ville").is(ville).and("type").is(type)),
+			project("prix").and("date").extractYear().as("year"),
+			group("year").avg("prix").as("moyenne"),
+			sort(ASC, "_id")
+	);
+	AggregationResults&lt;MeanPrice&gt; moyenne = mongoTemplate.aggregate(aggregation, "prices", MeanPrice.class); <i class="conum" data-value="3"></i><b>(3)</b>
+	return moyenne.getMappedResults().stream() <i class="conum" data-value="4"></i><b>(4)</b>
+			.map(item -&gt; new double[]{item.annee, item.moyenne})
+			.collect(Collectors.toList());
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>On récupère les variables de l&#8217;URL. En Java 8, il n&#8217;est pas nécessaire de
+repréciser le nom dans l&#8217;annotation, car Spring le déduit du nom du
+paramètre</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Création de la requête d&#8217;aggrégation</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Appel de la requête</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>On souhaite un retour de type <code>List&lt;double[]&gt;</code>, soit une liste de couple
+<em>année &#8594; prix moyen</em>. Pour cela, on utilise les <em>streams</em> pour tranformer
+les données.</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="title">Exemple</div>
+<div class="content">
+<pre>$ curl -i -s http://localhost:8080/prices/moyenne/toulouse/Gazole
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Content-Type: application/json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 01 Jul 2015 08:27:06 GMT
+
+[
+  [ 2007.0, 1.1131264957264961 ],
+  [ 2008.0, 1.2763996069439891 ],
+  [ 2009.0, 1.0085609756097424 ],
+  [ 2010.0, 1.1565331164991077 ],
+  [ 2011.0, 1.3556064800251648 ],
+  [ 2012.0, 1.4129217121312958 ],
+  [ 2013.0, 1.361675884505891 ],
+  [ 2014.0, 1.2814998831502842 ]
+]</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pages_web">5.2. Pages web</h3>
+<div class="paragraph">
+<p>Maintenant que l&#8217;on a des données accessibles par des services web, nous allons
+mettre en place une petite page HTML qui va interroger ces données et afficher
+l'évolution du prix par an.</p>
+</div>
+<div class="paragraph">
+<p>On a déjà un Tomcat embarqué qui tourne. Il reste à lui indiquer quelles sont
+les ressources web à servir. Idéalement, on aimerait pouvoir sortir ces
+ressources du jar, afin de pouvoir les modifier sans avoir besoin de relivrer
+l&#8217;application.</p>
+</div>
+<div class="paragraph">
+<p>Cela est possible simplement en créant une classe de configuration :</p>
+</div>
+<div class="listingblock">
+<div class="title">config/WebConfig.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.config;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+@Configuration
+@EnableWebMvc
+public class WebConfig extends WebMvcConfigurerAdapter {
+	@Value("${web.resources.dir}")
+	private String resourceDir;
+
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/web/**").addResourceLocations("file://" + resourceDir);
+		super.addResourceHandlers(registry);
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Cette classe indique simplement à Spring Boot que les ressources à servir quand
+on accède à une URL <code>/web/</code> se trouvent dans un répertoire donné.</p>
+</div>
+<div class="paragraph">
+<p>On définit une propriété indiquant ce répertoire :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">web.resources.dir: /c:/Users/sdr/Documents/CNRS/Projets/JDEV2015/app/www/</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Avec ces deux changements, on est prêt à servir du contenu.</p>
+</div>
+<div class="paragraph">
+<p>Voici un exemple de fichier HTML proposant un formulaire pour rentrer une ville
+et un type de carburant, et qui graphe le prix moyen par an pour cette ville.</p>
+</div>
+<div class="listingblock">
+<div class="title">index.html</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-html" data-lang="html">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;
+	&lt;title&gt;Prix des carburants&lt;/title&gt;
+	&lt;script language="javascript" type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"&gt;&lt;/script&gt;
+	&lt;script language="javascript" type="text/javascript"
+			src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"&gt;&lt;/script&gt;
+
+	&lt;style&gt;
+		* { padding: 0; margin: 0; vertical-align: top; }
+
+		body {
+		font: 18px/1.5em "proxima-nova", Helvetica, Arial, sans-serif;
+		}
+
+		button {
+		font-size: 18px;
+		padding: 1px 7px;
+		}
+
+		input {
+		font-size: 18px;
+		}
+
+		#content {
+		width: 880px;
+		margin: 0 auto;
+		padding: 10px;
+		}
+
+		.demo-container {
+		box-sizing: border-box;
+		width: 850px;
+		height: 450px;
+		padding: 20px 15px 15px 15px;
+		margin: 15px auto 30px auto;
+		border: 1px solid #ddd;
+		background: #fff;
+		background: linear-gradient(#f6f6f6 0, #fff 50px);
+		background: -o-linear-gradient(#f6f6f6 0, #fff 50px);
+		background: -ms-linear-gradient(#f6f6f6 0, #fff 50px);
+		background: -moz-linear-gradient(#f6f6f6 0, #fff 50px);
+		background: -webkit-linear-gradient(#f6f6f6 0, #fff 50px);
+		box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+		-o-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+		-ms-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+		-moz-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+		-webkit-box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+		}
+
+		.demo-placeholder {
+		width: 100%;
+		height: 100%;
+		font-size: 14px;
+		line-height: 1.2em;
+		}
+
+	&lt;/style&gt;
+	&lt;script type="text/javascript"&gt;
+
+	$(function() {
+
+        var options = {
+			lines: {
+				show: true
+			},
+			points: {
+				show: true
+			},
+			xaxis: {
+				tickDecimals: 0,
+				tickSize: 1
+			}
+		};
+
+		var data = [];
+		$.plot("#placeholder", data, options);
+
+
+        $("button.fetchData").click(function () {
+
+			var button = $(this);
+
+			// Find the URL in the link right next to us, then fetch the data
+            var ville = $('#ville').val();
+            var type = $('#type').val();
+			var dataurl = "http://localhost:8080/prices/moyenne/" + ville + "/" + type;
+
+			function onDataReceived(series) {
+				// Push the new data onto our existing data array
+                data.push(series);
+
+				$.plot("#placeholder", data, options);
+			}
+
+			$.ajax({
+				url: dataurl,
+				type: "GET",
+				dataType: "json",
+				success: onDataReceived
+			});
+		});
+
+	});
+
+
+	&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id="content"&gt;
+
+	&lt;div class="demo-container"&gt;
+		&lt;div id="placeholder" class="demo-placeholder"&gt;&lt;/div&gt;
+	&lt;/div&gt;
+	Ville: &lt;input type="text" name="ville" id="ville"&gt;&lt;br&gt;
+	Type: &lt;select name="type" id="type"&gt;
+	&lt;option&gt;Gazole&lt;/option&gt;
+	&lt;option&gt;SP95&lt;/option&gt;
+&lt;/select&gt;
+	&lt;button class="fetchData"&gt;Récupérer les données&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On a ainsi notre page web et notre graphe :</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="prix-carburants.png" alt="prix carburants.png">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_s_curit">5.3. Sécurité</h3>
+<div class="paragraph">
+<p>Les services web et les pages servies ne sont pas sécurisées. Pour mettre en
+place la sécurité, on ajoute le <em>starter</em> Spring Boot Security :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-security&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Le simple fait d&#8217;ajouter ce <em>starter</em> va modifier le comportement de notre
+application. Tout d&#8217;abord, on peut voir cette ligne apparaître dans les logs :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Using default security password: 0318fa97-5531-467c-b9e7-8e9894c5b4a1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>En fait, Spring Boot a effecuté différentes actions :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>création d&#8217;un utilisateur en mémoire avec le mot de passe  indiqué (il est
+possible de modifier ce mot de passe avec la propriété
+<code>security.user.password</code>)</p>
+</li>
+<li>
+<p>pas d&#8217;authentification pour servir les ressources <code>/css</code>, <code>/js</code>, &#8230;&#8203;</p>
+</li>
+<li>
+<p>pour tout le reste, authentification <code>Basic</code> requise</p>
+</li>
+<li>
+<p>événements publiés lors de l&#8217;authentification d&#8217;un utilisateur (ou un échec
+d&#8217;authentification ou d&#8217;autorisation)</p>
+</li>
+<li>
+<p>activation de fonctionnalités (XSS, CSRF, &#8230;&#8203;)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Ainsi si j&#8217;essaie d&#8217;accéder à l&#8217;application, j&#8217;ai un code HTTP <code>401</code> :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ curl -i -s http://localhost:8080/prices/moyenne/toulouse/Gazole
+HTTP/1.1 401 Unauthorized
+Server: Apache-Coyote/1.1
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+WWW-Authenticate: Basic realm="Spring"
+Content-Type: application/json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 01 Jul 2015 10:12:29 GMT
+
+{
+  "timestamp":1435745548972,
+  "status":401,
+  "error":"Unauthorized",
+  "message":"Full authentication is required to access this resource",
+  "path":"/prices/moyenne/toulouse/Gazole"
+}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Si je précise l&#8217;utilisateur <code>user</code> et le mot de passe affiché dans les logs,
+j&#8217;ai bien accès à la ressource :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ curl -i -s -u user:0318fa97-5531-467c-b9e7-8e9894c5b4a1 http://localhost:8080/prices/moyenne/toulouse/Gazole
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+Content-Type: application/json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 01 Jul 2015 10:14:39 GMT
+
+[[2007.0,1.1131264957264961],[2008.0,1.2763996069439891],[2009.0,1.0085609756097424],[2010.0,1.1565331164991077],[2011.0,1.3556064800251648],[2012.0,1.4129217121312958],[2013.0,1.361675884505891],[2014.0,1.2814998831502842]]</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pour aller plus loin dans le paramétrage, voici un exemple de configuration :</p>
+</div>
+<div class="listingblock">
+<div class="title">config/SecurityConfig.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+@Configuration <i class="conum" data-value="1"></i><b>(1)</b>
+public class SecurityConfig extends WebSecurityConfigurerAdapter { <i class="conum" data-value="2"></i><b>(2)</b>
+	@Override
+	protected void configure(HttpSecurity http) throws Exception { <i class="conum" data-value="3"></i><b>(3)</b>
+		http
+				.authorizeRequests()
+				.antMatchers("/prices/**").permitAll()
+				.anyRequest().authenticated().and().httpBasic();
+	}
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception { <i class="conum" data-value="4"></i><b>(4)</b>
+		auth.inMemoryAuthentication()
+				.withUser("steph").password("steph").roles("USER");
+	}
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>C&#8217;est une classe de configuration</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Elle étend la classe <code>WebSecurityConfigurerAdapter</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Dans la méthode <code>configure(HttpSecurity)</code>, on indique quelles sont les URL à
+protéger, et comment</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Dans la méthode <code>configure(AuthenticationManagerBuilder)</code>, on indique
+comment récupérer les informations sur les utilisateurs pour l&#8217;authentifier.
+Ici, c&#8217;est simplement une base en mémoire avec un utilisateur. On a accès à
+tout Spring Security pour paraméter l&#8217;authentification et les autorisations,
+notamment en faisant des requêtes SQL sur des bases de comptes, des requêtes
+LDAP, OpenId, ou un traitement spécifique.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>On vérifie que l&#8217;on peut bien se connecter avec le compte <code>steph</code> :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ curl -i -s -u steph:steph http://localhost:8080/prices/moyenne/toulouse/Gazole
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Set-Cookie: JSESSIONID=2FB6DAD20D5A2BA5BEF2E6D6B531069E; Path=/; HttpOnly
+Content-Type: application/json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 01 Jul 2015 10:23:16 GMT
+
+[[2007.0,1.1131264957264961],[2008.0,1.2763996069439891],[2009.0,1.0085609756097424],[2010.0,1.1565331164991077],[2011.0,1.3556064800251648],[2012.0,1.4129217121312958],[2013.0,1.361675884505891],[2014.0,1.2814998831502842]]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quatri_me_partie_monitoring">6. Quatrième partie : monitoring</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>On a maintenant une application opérationnelle. On va ajouter la possibilité
+de surveiller son bon fonctionnement.</p>
+</div>
+<div class="sect2">
+<h3 id="_activator">6.1. Activator</h3>
+<div class="paragraph">
+<p>Le <em>starter</em> Spring Boot Activator va mettre en place plusieurs <em>endpoints</em> qui
+vont nous permettre de surveiller notre application.</p>
+</div>
+<div class="paragraph">
+<p>Commencer par ajouter le <em>starter</em> :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Cela nous met à disposition par exemple l'<em>endpoint</em> <code>env</code> pour obtenir les
+propriétés (à noter que les mots de passe sont cachés). Comme on a mis en place
+la sécurité, une authentification est demandée.</p>
+</div>
+<div class="paragraph">
+<p>On a en retour, au format JSON, les propriétés système de la JVM, les variables
+d&#8217;environnement, et les valeurs du fichier de configuration.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_r_cup_ration_des_informations_sur_l_application">6.2. Récupération des informations sur l&#8217;application</h3>
+<div class="paragraph">
+<p>Il existe également un <em>endpoint</em> <code>info</code> qui peut retourner des informations sur
+notre application.</p>
+</div>
+<div class="paragraph">
+<p>En ajoutant dans le fichier de propriétés les éléments suivants, ils seront
+retournés par le service web :</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml" data-lang="yaml">info.build:
+    artifact: ${project.artifactId}
+    name: ${project.name}
+    description: ${project.description}
+    version: ${project.version}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On utilise ici une syntaxe qui permet de récupérer les valeurs définies dans le
+<em>pom</em> de Maven.</p>
+</div>
+<div class="paragraph">
+<p>Avec un plugin supplémentaire, on peut également ajouter les informations
+relatives à Git :</p>
+</div>
+<div class="listingblock">
+<div class="title">pom.xml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml" data-lang="xml">&lt;plugin&gt;
+    &lt;groupId&gt;pl.project13.maven&lt;/groupId&gt;
+	&lt;artifactId&gt;git-commit-id-plugin&lt;/artifactId&gt;
+&lt;/plugin&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On obtient :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -s -u steph:steph http://localhost:8080/info</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+  "build":{
+    "artifact":"carburants",
+    "name":"carburants",
+    "description":"Prix des carburants",
+    "version":"1.0-SNAPSHOT"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sant_de_l_application">6.3. Santé de l&#8217;application</h3>
+<div class="paragraph">
+<p><em>Actuator</em> nous donne également l'état de santé de l&#8217;application avec <code>/health</code>.
+A noter que l&#8217;on a un état global (<code>UP</code>, <code>DOWN</code>, &#8230;&#8203;). Cet état est construit
+par rapport aux états de sous-composants, tels que l&#8217;espace disque, la
+connexion à une base de données. <em>Actuator</em> détecte par exemple que l&#8217;on a une
+connexion à une base Mongo, et vérifie donc que la connexion est opérationnelle.</p>
+</div>
+<div class="paragraph">
+<p>Par exemple :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -s -u steph:steph http://localhost:8080/health</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+  "status":"UP",
+  "diskSpace":{
+    "status":"UP",
+    "free":9528438784,
+    "threshold":10485760
+  },
+  "mongo":{
+    "status":"UP",
+    "version":"3.0.1"
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Si on arrête la base Mongo, on obtient :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -s -u steph:steph http://localhost:8080/health</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+  "status":"DOWN",
+  "diskSpace":{
+    "status":"UP",
+    "free":9528406016,
+    "threshold":10485760
+  },
+  "mongo":{
+    "status":"DOWN",
+    "error":"org.springframework.dao.DataAccessResourceFailureException: Read operation to server 127.0.0.1:27017 failed on database jdev; nested exception is com.mongodb.MongoException$Network: Read operation to server 127.0.0.1:27017 failed on database jdev"
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Si besoin, on peut définir nos propres états. Pour cela, il suffit de créer un
+composant implémentant <code>HealthIndicator</code> :</p>
+</div>
+<div class="listingblock">
+<div class="title">monitoring/PricesHealth.hava</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.monitoring;
+
+import org.jdev2015.domain.Price;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
+
+@Component
+public class PricesHealth implements HealthIndicator {
+	@Autowired
+	private MongoTemplate mongoTemplate;
+
+	@Value("${prix.seuil:1.40}")
+	private double threshold;
+
+	@Override
+	public Health health() {
+		Query q = new Query(Criteria.where("ville").is("toulouse"));
+		q.with(new Sort(Sort.Direction.DESC, "date"));
+		Price price = mongoTemplate.findOne(q, Price.class, "prices");
+
+		if (price.getPrix() &gt; threshold) {
+			return Health.down().withDetail("price", price.getPrix()).build();
+		} else {
+			return Health.up()
+					.withDetail("price", price.getPrix())
+					.withDetail("msg", "Il faut faire le plein !").build();
+		}
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On obtient :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -s -u steph:steph http://localhost:8080/health</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+  "status":"UP",
+  "pricesHealth":{
+    "status":"UP",
+    "price":1.364,
+    "msg":"Il faut faire le plein !"
+  },
+  "diskSpace":{
+    "status":"UP",
+    "free":9528340480,
+    "threshold":10485760
+  },
+  "mongo":{
+    "status":"UP",
+    "version":"3.0.1"
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_m_triques_de_l_application">6.4. Métriques de l&#8217;application</h3>
+<div class="paragraph">
+<p><em>Actuator</em> nous met également à disposition différentes métriques. Par exemple :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>$ curl -s -u steph:steph http://localhost:8080/metrics</pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+  "mem":370176,
+  "mem.free":302509,
+  "processors":4,
+  "instance.uptime":209056,
+  "uptime":216480,
+  "systemload.average":-1.0,
+  "heap.committed":370176,
+  "heap.init":129024,
+  "heap.used":67666,
+  "heap":1833472,
+  "threads.peak":20,
+  "threads.daemon":18,
+  "threads":20,
+  "classes":7201,
+  "classes.loaded":7201,
+  "classes.unloaded":0,
+  "gc.ps_scavenge.count":7,
+  "gc.ps_scavenge.time":345,
+  "gc.ps_marksweep.count":2,
+  "gc.ps_marksweep.time":237,
+  "httpsessions.max":-1,
+  "httpsessions.active":3,
+  "counter.status.200.health":1,
+  "counter.status.200.metrics":2,
+  "gauge.response.health":32.0,
+  "gauge.response.metrics":17.0
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On a différentes informations sur la JVM, et comme on expose des données <em>via</em>
+le web, on a également des valeurs sur le nombre de sessions, d&#8217;appels sur les
+différentes URLs avec le code HTTP de retour, et le temps moyen (<em>gauge</em>) en
+millisecondes.</p>
+</div>
+<div class="paragraph">
+<p>Là aussi, il est possible d&#8217;ajouter nos propres métriques, en implémentant
+l&#8217;interface PublicMetrics :</p>
+</div>
+<div class="listingblock">
+<div class="title">monitoring/PriceMetric.java</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java" data-lang="java">package org.jdev2015.monitoring;
+
+import org.jdev2015.domain.Price;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.endpoint.PublicMetrics;
+import org.springframework.boot.actuate.metrics.Metric;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Random;
+
+@Component
+public class PriceMetric implements PublicMetrics {
+	@Autowired
+	private MongoTemplate mongoTemplate;
+
+	private Random random = new Random();
+
+	@Override
+	public Collection&lt;Metric&lt;?&gt;&gt; metrics() {
+		Metric&lt;Double&gt; metricToulouse = new Metric&lt;Double&gt;("carburants.prix.toulouse", getPrix("toulouse"));
+		Metric&lt;Double&gt; metricBordeaux = new Metric&lt;Double&gt;("carburants.prix.bordeaux", getPrix("bordeaux"));
+		return Arrays.asList(metricToulouse, metricBordeaux);
+	}
+
+	private double getPrix(String ville) {
+		Query q = new Query(Criteria.where("ville").is(ville));
+		q.with(new Sort(Sort.Direction.DESC, "date"));
+		Price price = mongoTemplate.findOne(q, Price.class, "prices");
+		return price.getPrix() * (1 + random.nextGaussian() / 10);
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On a alors deux métriques supplémentaires dans le retour du service web :</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json" data-lang="json">{
+  "carburants.prix.toulouse": 1.308053927006486,
+  "carburants.prix.bordeaux": 1.273531083982098
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_grafana">6.5. Grafana</h3>
+<div class="paragraph">
+<p>Finalement, on va pouvoir utiliser ces métriques personnalisées, faciles à
+implémenter et exposer, pour surveiller notre application et créer des graphes.</p>
+</div>
+<div class="paragraph">
+<p>Pour la démo, nous allons simplement faire un script qui interroge le service
+web <code>/metrics</code> pour récupérer quelques données, les insérer dans une base de
+type <em>time series</em> (Influx DB), et utiliser un outil pour grapher les valeurs
+(Grafana).</p>
+</div>
+<div class="sect3">
+<h4 id="_influx_db">6.5.1. Influx DB</h4>
+<div class="paragraph">
+<p><a href="https://influxdb.com/" class="bare">https://influxdb.com/</a></p>
+</div>
+<div class="paragraph">
+<p>C&#8217;est une base de données faite pour stocker des données temporelles.
+L&#8217;installation est décrite sur cette page : <a href="https://influxdb.com/download/index.html" class="bare">https://influxdb.com/download/index.html</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_grafana_2">6.5.2. Grafana</h4>
+<div class="paragraph">
+<p><a href="http://grafana.org/" class="bare">http://grafana.org/</a></p>
+</div>
+<div class="paragraph">
+<p>C&#8217;est un outil pour faire des <em>dahsboards</em> à la manière de Kibana.
+L&#8217;installation se passe ici : <a href="http://grafana.org/download/" class="bare">http://grafana.org/download/</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_script_de_r_cup_ration_des_donn_es">6.5.3. Script de récupération des données</h4>
+<div class="paragraph">
+<p>Il est très basique :</p>
+</div>
+<div class="listingblock">
+<div class="title">sendMetrics.sh</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">#!/usr/bin/env zsh
+while true
+do
+        p=$(curl -s -u steph:steph http://192.168.56.1:8080/metrics | jq '.["carburants.prix.toulouse"]')
+        curl -i -XPOST 'http://localhost:8086/write?db=jdev' -d "carburant.prix,ville=toulouse value=$p"
+
+        p=$(curl -s -u steph:steph http://192.168.56.1:8080/metrics | jq '.["carburants.prix.bordeaux"]')
+        curl -i -XPOST 'http://localhost:8086/write?db=jdev' -d "carburant.prix,ville=bordeaux value=$p"
+
+        sleep 5
+done</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mise_en_place">6.5.4. Mise en place</h4>
+<div class="paragraph">
+<p>On démarre InfluxDB (<code>influxd</code>), puis dans le shell (<code>influx</code>), on crée une
+base :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>CREATE DATABASE jdev</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On peut alors commencer à envoyer des données avec le script précédent :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>./sendMetrics.sh</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On démarre Grafana avec <code>grafana-server</code>. On peut alors y accéder sur le port
+3000. Il faut configurer la source de données avec les valeurs suivantes :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>type : InfluxDB 0.9.x</p>
+</li>
+<li>
+<p>URL : <a href="http://localhost:8086" class="bare">http://localhost:8086</a></p>
+</li>
+<li>
+<p>Database : jdev</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>On peut obtenir par exemple ce genre de <em>dashboard</em>, basé sur les données
+exposées par l&#8217;application :</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="grafana.png" alt="grafana.png">
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion">7. Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Spring Boot permet d&#8217;accélérer la mise en oeuvre d&#8217;applications Java en
+proposant des configurations cohérentes, et des outils (tels que <em>Actuator</em>)
+pour surveiller notre application.</p>
+</div>
+<div class="paragraph">
+<p>Pour voir toutes les possibilités de Spring Boot, se référer à la documentation
+officielle. De plus, quasiment tous les exemples sur <a href="http://spring.io/guides" class="bare">http://spring.io/guides</a>
+utilisent Spring Boot.</p>
+</div>
+<div class="paragraph">
+<p>Les points marquants sont :</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Jar exécutable, auto-suffisant, ce qui simplifie les déploiements</p>
+</li>
+<li>
+<p>Gestion des propriétés</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Syntaxe YAML</p>
+</li>
+<li>
+<p>Simplicité d&#8217;utilisation d&#8217;autres variables avec <code>${mon.autre.variable}</code></p>
+</li>
+<li>
+<p>Hiérarchie de sources (ligne de commande &gt; variables d&#8217;environnement &gt;
+fichier <code>application.yml</code> à côté du jar &gt; fichier <code>application.yml</code> <strong>dans</strong> le
+jar &gt; valeur par défaut définie dans <code>@Value</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Configuration conditionnelle</p>
+</li>
+<li>
+<p>Tous les <em>starters</em> disponibles</p>
+</li>
+<li>
+<p><em>Actuator</em></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Dans la prochaine version (1.3), les jars générés seront directement exécutables
+sous Linux : il sera possible de faire :</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>sudo ln -s /var/myapp/myapp.jar /etc/init.d/myapp</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Il y aura également du <em>live reload</em>, du <em>remote update</em>, de nouveaux <em>Health
+points</em>&#8230;&#8203;</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2015-07-02 01:56:05 PM
+</div>
+</div>
+</body>
+</html>

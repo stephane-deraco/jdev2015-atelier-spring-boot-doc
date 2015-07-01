@@ -268,7 +268,7 @@ logging.level:
     org.springframework: INFO
 ----
 
-WARN: il faut des espaces et non des tabulations dans ce fichier.
+WARNING: il faut des espaces et non des tabulations dans ce fichier.
 
 On peut ainsi modifier le niveau de log de notre traitement à _DEBUG_, et le
 voir s'afficher dans les logs :
@@ -787,7 +787,7 @@ public class Transform {
 <3> Si les données ne sont pas valides, une collection vide est retournée
 <4> Cette technique permet de supprimer les caractères spéciaux par leur
     équivalent _ascii_
-<5> Utilisation des _stream_s de Java 8. Sur la liste d'élément XML contenant
+<5> Utilisation des _streams_ de Java 8. Sur la liste d'élément XML contenant
     chacun un prix/date/type pour une ville donnée, on transforme (_map_) cet
     élément en `Price` (appel de la méthode `createPrice`), puis on ne garde
     que ceux pour lesquels on a une valeur (`isPresent`) que l'on récupère
