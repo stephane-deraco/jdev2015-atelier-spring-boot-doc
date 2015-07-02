@@ -1,0 +1,4 @@
+= Documentation sur l'atelier des JDEV 2015 sur Spring Boot
+JDEV 2015
+
+Support de l'atelier au format Asciidoc, ainsi que HTML et PDF.
