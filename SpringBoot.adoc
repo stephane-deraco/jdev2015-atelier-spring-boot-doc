@@ -413,8 +413,8 @@ Pour lire un fichier XML en Java, il existe deux grandes possibilités :
 Cependant, utiliser SAX est lourd à mettre en place.
 
 ==== Apache Camel
-Nous allons utiliser Apache Camel, qui s'intègre très bien dans un
-environnement Spring (et Spring Boot) pour effectuer ce traitement.
+Nous allons utiliser http://camel.apache.org/[Apache Camel], qui s'intègre très
+bien dans un environnement Spring (et Spring Boot) pour effectuer ce traitement.
 
 Il faut ajouter les dépendances dans le _pom_ :
 
@@ -443,6 +443,7 @@ Pour intégrer Camel dans une application Spring Boot, il suffit de déclarer un
 classe annotée `@Component` qui étend `RouteBuilder` :
 
 .routes/ProcessXMLFilesRoute.java
+[source,java]
 ----
 package org.jdev2015.routes;
 
@@ -797,7 +798,7 @@ public class Transform {
 Le dernier changement est dans la route Camel :
 
 .routes/ProcessXMLFilesRoutes.java
-[source,xml]
+[source,java]
 ----
 from("direct:processXML")
 	.split().tokenizeXML("pdv").streaming()
@@ -857,7 +858,7 @@ Pour insérer les données dans Mongo, on a ici deux grandes possibilités.
 On peut, depuis notre route Camel, appeler un _bean_ qui va insérer la données
 dans Mongo.
 
-Nous allons pour le moment utiliser le principe du 
+Nous allons présenter le principe du 
 http://docs.spring.io/spring-data/data-mongo/docs/1.7.0.RELEASE/reference/html/#repositories[_Repository_]
 qui permet de définir les opérations de base sur Mongo, ainsi que des opérations
 personnalisées à partir du nom de la méthode. Cela se fait en créant une
@@ -887,8 +888,9 @@ public interface PriceRepository extends MongoRepository<Price, String> {
 
 *Deuxième possibilité* :
 
-Nous allons utiliser le composant Mongo de Camel pour faire nos insertions en
-base. Pour cela, on ajouter la dépendance Camel-MongoDB dans le _pom_ :
+Nous allons utiliser le http://camel.apache.org/mongodb.html[composant Mongo] de
+Camel pour faire nos insertions en base. Pour cela, on ajouter la dépendance
+suivante dans le _pom_ :
 
 .pom.xml
 [source,xml]
@@ -960,7 +962,7 @@ public class MongoConfig extends AbstractMongoConfiguration{
     contexte de Spring. On pourra ensuite l'utiliser dans la route Mongo.
 
 
-Avant de modifier notre route Camel, on a créer une méthode permettant de
+Avant de modifier notre route Camel, on va créer une méthode permettant de
 transformer notre objet `Price` en `DBObject` Mongo :
 
 .services/Transform.java
@@ -998,7 +1000,7 @@ configuration :
 camel.springboot.typeConversion: false
 ----
 
-Enfin, on va exclude certaines lignes de logs `WARN` :
+Enfin, on va exclure certaines lignes de logs `WARN` :
 
 .application.yml
 [source,yaml]
@@ -1008,7 +1010,7 @@ logging.level:
     org.springframework: INFO
     org.apache.camel.component.mongodb.converters: ERROR # <1>
 ----
-<1> Les `WARN` du _converter_ pour nous indiquer qu'il _fallback_ ne seront
+<1> Les `WARN` du _converter_, qui nous indiquent qu'il _fallback_, ne seront
     plus affichés.
 
 
@@ -1075,10 +1077,10 @@ On utilisera ces données pour la suite (environ 180 000 entrées).
 Maintenant que l'on a pu récupérer nos données à partir de fichiers, et les
 stocker en base, on va les exposer via des services web. Mais si par exemple on
 ne veut plus que la route se déclenche, il faudrait pouvoir garder le code mis
-en place, mais désactiver sa mise en place.
+en place, mais désactiver son exécution.
 
 Avec Spring Boot, quand on déclare des composants, on peut indiquer dans quelles
-condition ces composants doivent être pris en compte ou pas. Pour cela, il
+conditions ces composants doivent être pris en compte ou pas. Pour cela, il
 existe différentes annotations, telles que :
 
 * `ConditionalOnProperty`
@@ -1561,7 +1563,7 @@ application. Tout d'abord, on peut voir cette ligne apparaître dans les logs :
 Using default security password: 0318fa97-5531-467c-b9e7-8e9894c5b4a1
 ----
 
-En fait, Spring Boot a effecuté différentes actions :
+En effet, Spring Boot a effectué différentes actions :
 
 * création d'un utilisateur en mémoire avec le mot de passe  indiqué (il est
   possible de modifier ce mot de passe avec la propriété
@@ -1722,18 +1724,6 @@ info.build:
 On utilise ici une syntaxe qui permet de récupérer les valeurs définies dans le
 _pom_ de Maven.
 
-Avec un plugin supplémentaire, on peut également ajouter les informations
-relatives à Git :
-
-.pom.xml
-[source,xml]
-----
-<plugin>
-    <groupId>pl.project13.maven</groupId>
-	<artifactId>git-commit-id-plugin</artifactId>
-</plugin>
-----
-
 On obtient :
 
  $ curl -s -u steph:steph http://localhost:8080/info
@@ -1750,6 +1740,19 @@ On obtient :
 }
 ----
 
+
+Avec un https://github.com/ktoso/maven-git-commit-id-plugin/[plugin supplémentaire],
+on peut également ajouter les informations relatives à Git telles que la
+branche, le message de commit, ...
+
+.pom.xml
+[source,xml]
+----
+<plugin>
+    <groupId>pl.project13.maven</groupId>
+	<artifactId>git-commit-id-plugin</artifactId>
+</plugin>
+----
 
 
 === Santé de l'application
@@ -1873,6 +1876,11 @@ On obtient :
 }
 ----
 
+WARNING: Dans le code qui implémente le `HealthIndicator`, il faut faire
+         attention à ne pas lever d'exeptions. Ici, le code part en erreur si la
+         base Mongo n'est pas disponible par exemple (il faudrait utiliser un
+         _try/catch_).
+
 
 === Métriques de l'application
 _Actuator_ nous met également à disposition différentes métriques. Par exemple :
@@ -1962,7 +1970,8 @@ public class PriceMetric implements PublicMetrics {
 }
 ----
 
-On a alors deux métriques supplémentaires dans le retour du service web :
+On a alors deux métriques supplémentaires (légérement aléatoires) dans le retour
+du service web :
 
 [source,json]
 ----
@@ -1972,7 +1981,7 @@ On a alors deux métriques supplémentaires dans le retour du service web :
 }
 ----
 
-=== Grafana
+=== Graphe des métriques
 Finalement, on va pouvoir utiliser ces métriques personnalisées, faciles à
 implémenter et exposer, pour surveiller notre application et créer des graphes.
 
