@@ -298,7 +298,7 @@ traiter dans le fichier de propriétés :
 ----
 files:
     base: C:/Users/sdr/Documents/CNRS/Projets/JDEV2015/app/data
-    in: ${base}/in # <1>
+    in: ${files.base}/in # <1>
 ----
 <1> il est possible de faire référence à d'autres valeurs
 
